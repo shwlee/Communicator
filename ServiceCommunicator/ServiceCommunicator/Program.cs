@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Define.Classes;
 using Define.Classes.Args;
+using Define.Interfaces;
 using Mediator;
 
 namespace ServiceCommunicator
@@ -13,6 +14,13 @@ namespace ServiceCommunicator
 	{
 		static void Main(string[] args)
 		{
+			var mediator = new MediatorContext {InterfaceType = typeof(IServiceStatus), Method = "SetServiceStatus" };
+			var clientHash = mediator.GetHashCode();
+			var packets = PacketHelper.GeneratePacket(mediator, new SetServiceStatusRequest { ClientHash = clientHash, Status = true }, clientHash);
+			PacketHelper.CheckPacket(packets, typeof(SetServiceStatusRequest));
+
+			Console.ReadKey();
+
 			var serviceStatus = new ServiceStatus();
 			var instanceMediator = new InstanceMediator();
 			instanceMediator.SetInstance(serviceStatus);

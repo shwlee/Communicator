@@ -66,9 +66,8 @@ namespace Mediator
 
 		// TODO : need packet parser.
 
-		private TResult Execute<TParam, TResult> (string interfaceName, string method, TParam parameter)
-			where TParam : class
-			where TResult : class
+		private object Execute<T> (string interfaceName, string method, T parameter)
+			where T : class			
 		{
 			if (this._interfaceContexts.ContainsKey(interfaceName) == false)
 			{
@@ -82,10 +81,10 @@ namespace Mediator
 				// or throw exception?
 				return null;
 			}
-
+			
 			try
 			{
-				return context.Execute.DynamicInvoke(parameter) as TResult;
+				return context.Execute.DynamicInvoke(parameter);
 			}
 			catch (Exception)
 			{
