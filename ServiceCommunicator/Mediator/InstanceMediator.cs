@@ -11,42 +11,49 @@ namespace Mediator
 	{
 		private Dictionary<string, List<MediatorContext>> _interfaceContexts = new Dictionary<string, List<MediatorContext>>();
 
-		public void SetInstance(object instance)
+		public void SetInstance(params object[] instances)
 		{
-			var type = instance.GetType();
-			var interfaces = type.GetInterfaces();
-			foreach (var @interface in interfaces)
+			foreach (var instance in instances)
 			{
-				if (this._interfaceContexts.ContainsKey(@interface.Name))
+				var type = instance.GetType();
+				var interfaces = type.GetInterfaces();
+				foreach (var @interface in interfaces)
 				{
-					continue;
+					if (this._interfaceContexts.ContainsKey(@interface.Name))
+					{
+						continue;
+					}
+
+					var mediatorContexts = new List<MediatorContext>();
+					this._interfaceContexts.Add(@interface.Name, mediatorContexts);
+
+					var methodInfos = @interface.GetMethods();
+					foreach (var methodInfo in methodInfos)
+					{
+						var parameters = methodInfo.GetParameters();
+						if (parameters.Length != 1) // allow only 1 parameter.
+						{
+							continue;
+						}
+
+						var context = new MediatorContext();
+						context.TargetInstance = instance;
+						context.InterfaceType = @interface;
+						context.Method = methodInfo.Name;
+						context.ArgumentType = parameters[0].ParameterType;
+						//context.ReturnType = methodInfo.ReturnType;
+
+						var parameterExpresssion = Expression.Parameter(parameters[0].ParameterType);
+						var call = Expression.Call(Expression.Constant(instance), methodInfo, parameterExpresssion);
+						context.Execute = Expression.Lambda(call, parameterExpresssion).Compile();
+
+						mediatorContexts.Add(context);
+					}
 				}
-
-				var mediatorContexts = new List<MediatorContext>();
-				this._interfaceContexts.Add(@interface.Name, mediatorContexts);
-
-				var methodInfos = @interface.GetMethods();
-				foreach (var methodInfo in methodInfos)
-				{
-					var context = new MediatorContext();
-					context.TargetInstance = instance;
-					context.InterfaceType = @interface;
-					context.Method = methodInfo.Name;
-
-					var parameters = methodInfo.GetParameters();
-					context.ArgumentType = parameters[0].ParameterType;
-
-					context.ReturnType = methodInfo.ReturnType;
-
-					var parameterExpresssion = Expression.Parameter(parameters[0].ParameterType);
-					var call = Expression.Call(Expression.Constant(instance), methodInfo, parameterExpresssion);
-					context.Execute = Expression.Lambda(call, parameterExpresssion).Compile();
-
-					mediatorContexts.Add(context);
-				}
-			}
+			}			
 		}
 
+		// test TODO : delete this method.
 		public MediatorContext GetMediatorContext(string interfaceName, string method)
 		{
 			if (this._interfaceContexts.ContainsKey(interfaceName) == false)
@@ -55,6 +62,36 @@ namespace Mediator
 			}
 
 			return this._interfaceContexts[interfaceName].FirstOrDefault(m => m.Method.Equals(method));
+		}
+
+		// TODO : need packet parser.
+
+		private TResult Execute<TParam, TResult> (string interfaceName, string method, TParam parameter)
+			where TParam : class
+			where TResult : class
+		{
+			if (this._interfaceContexts.ContainsKey(interfaceName) == false)
+			{
+				// or throw exception?
+				return null;
+			}
+
+			var context = this._interfaceContexts[interfaceName].FirstOrDefault(m => m.Method.Equals(method));
+			if (context == null)
+			{
+				// or throw exception?
+				return null;
+			}
+
+			try
+			{
+				return context.Execute.DynamicInvoke(parameter) as TResult;
+			}
+			catch (Exception)
+			{
+				// TODO : need logging.
+				throw;
+			}			
 		}
 	}
 }

@@ -18,7 +18,7 @@ namespace Mediator
 
 		public Type ArgumentType { get; set; }
 
-		public Type ReturnType { get; set; }
+		//public Type ReturnType { get; set; }
 
 		public Delegate Execute { get; set; }
 	}
