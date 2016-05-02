@@ -17,11 +17,11 @@ namespace Mediator
 		private const int headerSize = 4;
 		
 
-		public static byte[] GeneratePacket(MediatorContext context, object arg, int requestHash)
+		public static byte[] GeneratePacket(string interfaceName, string methodName, object arg, int requestHash)
 		{
 			var preamble = BitConverter.GetBytes(requestHash);
-			var interfaceNameBytes = Encoding.UTF8.GetBytes(context.InterfaceName);
-			var methodNameBytes = Encoding.UTF8.GetBytes(context.Method);
+			var interfaceNameBytes = Encoding.UTF8.GetBytes(interfaceName);
+			var methodNameBytes = Encoding.UTF8.GetBytes(methodName);
 
 			byte[] argBytes;
 			using(var ms = new MemoryStream())
@@ -42,7 +42,8 @@ namespace Mediator
 			return packet.ToArray();
 		}
 
-		public static void CheckPacket(byte[] packet, Type argType)
+		public static T ParsePacket<T>(byte[] packet, Type argType)
+			where T : class
 		{
 			using (var memoryStream = new MemoryStream(packet))
 			{
@@ -70,9 +71,45 @@ namespace Mediator
 					using (var argStream = new MemoryStream(argBytes))
 					{
 						var arg = ProtoBuf.Serializer.NonGeneric.Deserialize(argType, argStream);
+						return arg as T;
 					}
 				}
 			}			
+		}
+
+		public static T ParseArgument<T>(byte[] packet, Type argType)
+			where T : class
+		{
+			using (var memoryStream = new MemoryStream(packet))
+			{
+				using (var binaryReader = new BinaryReader(memoryStream))
+				{
+					var preambleBytes = binaryReader.ReadBytes(4);
+					var preamble = BitConverter.ToInt32(preambleBytes, 0);
+
+					var interfaceNameSizeBytes = binaryReader.ReadBytes(4);
+					var interfaceNameSize = BitConverter.ToInt32(interfaceNameSizeBytes, 0);
+
+					var methodNameSizeBytes = binaryReader.ReadBytes(4);
+					var methodNameSize = BitConverter.ToInt32(methodNameSizeBytes, 0);
+
+					var argSizeBytes = binaryReader.ReadBytes(4);
+					var argSize = BitConverter.ToInt32(argSizeBytes, 0);
+
+					var interfaceNameBytes = binaryReader.ReadBytes(interfaceNameSize);
+					var interfaceName = Encoding.UTF8.GetString(interfaceNameBytes);
+
+					var methodNameBytes = binaryReader.ReadBytes(methodNameSize);
+					var methodName = Encoding.UTF8.GetString(methodNameBytes);
+
+					var argBytes = binaryReader.ReadBytes(argSize);
+					using (var argStream = new MemoryStream(argBytes))
+					{
+						var arg = ProtoBuf.Serializer.NonGeneric.Deserialize(argType, argStream);
+						return arg as T;
+					}
+				}
+			}
 		}
 	}
 }

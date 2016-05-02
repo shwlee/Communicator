@@ -16,8 +16,8 @@ namespace ServiceCommunicator
 		{
 			var mediator = new MediatorContext {InterfaceType = typeof(IServiceStatus), Method = "SetServiceStatus" };
 			var clientHash = mediator.GetHashCode();
-			var packets = PacketHelper.GeneratePacket(mediator, new SetServiceStatusRequest { ClientHash = clientHash, Status = true }, clientHash);
-			PacketHelper.CheckPacket(packets, typeof(SetServiceStatusRequest));
+			var packets = PacketHelper.GeneratePacket(mediator.InterfaceName, mediator.Method, new SetServiceStatusRequest { ClientHash = clientHash, Status = true }, clientHash);
+			PacketHelper.ParsePacket<SetServiceStatusRequest>(packets, typeof(SetServiceStatusRequest));
 
 			Console.ReadKey();
 
