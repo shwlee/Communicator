@@ -77,7 +77,7 @@ namespace Mediator
 			}			
 		}
 
-		public static T ParseArgument<T>(byte[] packet, Type argType)
+		public static T ParseArgument<T>(byte[] packet)
 			where T : class
 		{
 			using (var memoryStream = new MemoryStream(packet))
@@ -105,8 +105,8 @@ namespace Mediator
 					var argBytes = binaryReader.ReadBytes(argSize);
 					using (var argStream = new MemoryStream(argBytes))
 					{
-						var arg = ProtoBuf.Serializer.NonGeneric.Deserialize(argType, argStream);
-						return arg as T;
+						var arg = ProtoBuf.Serializer.Deserialize<T>(argStream);
+						return arg;
 					}
 				}
 			}

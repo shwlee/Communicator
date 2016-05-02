@@ -69,7 +69,7 @@ namespace Communication
 				// await receive response.
 				var response = await tcs.Task;
 				
-				return PacketHelper.ParseArgument<TResult>(response, packet.GetType());
+				return PacketHelper.ParseArgument<TResult>(response);
 			});			
 		}
 
