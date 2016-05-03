@@ -35,8 +35,10 @@ namespace Communication.Hydrations
 			var interfaceName = info.Method.DeclaringType.Name;
 			object argObject = null;
 
-			if (info.Arguments.Count > 0) // 1개의 인자만 사용한다.
+			if (info.Arguments.Count > 0) // allow only 1 parameter.
 			{
+				// TODO : handle to exception.
+
 				var hydrationArg = Expression.Lambda<Func<object>>(info.Arguments[0], null);
 
 				var compiledArgObjectExpression = hydrationArg.Compile();
