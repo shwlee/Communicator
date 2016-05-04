@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading.Tasks;
+using Common.Interfaces;
 
 namespace Communication.Sockets
 {
-	public class OutgoingSocket
+	public class OutgoingSocket : ISocketSender
 	{
 		private Socket _socket;
 
@@ -20,9 +18,9 @@ namespace Communication.Sockets
 			this._socket.BeginReceive(state.buffer, 0, StateObject.BUFFER_SIZE, SocketFlags.None, Communicator.ReceiveServiceCallback, state);
 		}
 
-		public void Send()
+		public async Task<int> Send(byte[] packet, Guid clientId = default(Guid))
 		{
-
+			return await this._socket.SendTaskAsync(packet);
 		}
 
 		public void Dispose()

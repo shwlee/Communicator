@@ -48,6 +48,14 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{faf48602-4478-48cf-a0cf-7fd457ae1fa1}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Communicator\Communication.csproj">
+      <Project>{90fc0a23-fac7-4346-b24a-38729af56528}</Project>
+      <Name>Communication</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Define\Define.csproj">
       <Project>{661b2424-f567-46c3-bf51-68049fe86558}</Project>
       <Name>Define</Name>

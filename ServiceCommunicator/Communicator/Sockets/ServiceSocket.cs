@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading.Tasks;
-using Common.Communication;
-using Common.Threading;
+using Common.Interfaces;
 
 namespace Communication.Sockets
 {
-	public class ServiceSocket
+	public class ServiceSocket : ISocketSender
 	{
 		private List<StateObject> _connectedClients = new List<StateObject>();
 		private Socket _socket;
@@ -19,10 +17,10 @@ namespace Communication.Sockets
 		{
 			var ipEndpoint = new IPEndPoint(IPAddress.Any, port);
 
-			_socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-			_socket.Bind(ipEndpoint);
-			_socket.Listen(backlog);
-			_socket.BeginAccept(OnAccept, _socket);
+			this._socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+			this._socket.Bind(ipEndpoint);
+			this._socket.Listen(backlog);
+			this._socket.BeginAccept(OnAccept, _socket);
 		}
 
 		private void OnAccept(IAsyncResult ar)
@@ -46,7 +44,7 @@ namespace Communication.Sockets
 				this._connectedClients.Remove(alreadyConnected);
 			}
 
-			var state = new StateObject { WorkSocket = clientSocket };
+			var state = new StateObject { ClientId = Guid.NewGuid(), WorkSocket = clientSocket };
 			this._connectedClients.Add(state);
 
 			clientSocket.BeginReceive(state.buffer, 0, StateObject.BUFFER_SIZE, SocketFlags.None, Communicator.ReceiveServiceCallback, state);
@@ -54,9 +52,17 @@ namespace Communication.Sockets
 			serviceSocket.BeginAccept(OnAccept, serviceSocket);
 		}		
 
-		public void Send(Guid clientId)
+		public async Task<int> Send(byte[] packet, Guid clientId = default(Guid))
 		{
+			var connectedClient = this._connectedClients.FirstOrDefault(s => s.ClientId.Equals(clientId));
+			if (connectedClient == null)
+			{
+				// TODO : need logging.
+				return 0;
+			}
 
+			var clientSocket = connectedClient.WorkSocket;
+			return await clientSocket.SendTaskAsync(packet);
 		}
 
 		public void StopService()

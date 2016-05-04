@@ -67,6 +67,11 @@ namespace Common.Threading
 			}
 		}
 
+		public void Post(SendOrPostCallback d)
+		{
+			this.Post(d, null);
+		}
+
 		public override void Send(SendOrPostCallback d, object state)
 		{
 			try
@@ -79,6 +84,11 @@ namespace Common.Threading
 			{
 				Debug.WriteLine("Send exception : " + ex);
 			}
+		}
+
+		public void Send(SendOrPostCallback d)
+		{
+			this.Send(d, null);
 		}
 
 		private void WaitForWorkDone(SendOrPostCallback d, object state, TaskCompletionSource<bool> tcs)

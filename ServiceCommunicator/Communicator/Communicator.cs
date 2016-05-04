@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading.Tasks;
-using Common.Communication;
+using Common.Interfaces;
 using Common.Threading;
+using Communication.AsyncResponse;
 using Communication.Hydrations;
 using Communication.Sockets;
 using Mediator;
@@ -16,7 +13,9 @@ namespace Communication
 {
 	public class Communicator
 	{
-		private InstanceMediator _mediator = new InstanceMediator();
+		private static StaSynchronizationContext _socketSycnContext = new StaSynchronizationContext("SocketSynchronizationContext");
+
+		private static InstanceMediator _mediator = new InstanceMediator();
 
 		private ServiceSocket _service = new ServiceSocket();
 
@@ -25,7 +24,7 @@ namespace Communication
 
 		public void Initialize(params object[] instances)
 		{
-			this._mediator.SetInstance(instances);
+			_mediator.SetInstance(instances);
 		}
 
 		public void StartService(int port, int backlog)
@@ -47,30 +46,39 @@ namespace Communication
 			{
 				// get protocol hash and TaskCompletionSource save.
 				var tcs = new TaskCompletionSource<byte[]>();
-				var hash =ProtocolHash.GetProtocolHash();
-				ResponseAwaits.Insert(hash, tcs); // TODO : consider synchronization problem.
+				var hash = ProtocolHash.GetProtocolHash();
+				_socketSycnContext.Send(d =>
+				{
+					ResponseAwaits.Insert(hash, tcs); // TODO : consider synchronization problem.
+				});
 				
 				// hydration			
 				var packet = HydrateExpression.Get(method);
-			
+				packet.RequestHash = hash;
+
 				// get Packet.
-				var sendBytes = PacketHelper.GeneratePacket(packet.InterfaceName, packet.MethodName, packet.Argument, hash);
+				var sendBytes = PacketGenerator.GeneratePacket(packet);
 
 				// send
-				if (clientId == default(Guid))
+				var sender = clientId == default(Guid) ? (ISocketSender)this._outgoing : (ISocketSender)this._service;				
+				if (sender == null)
 				{
-					this._outgoing.Send();
+					// disconnected or not connect yet.
+					return null; // throw exception?
 				}
-				else
+
+				var sendPacketLength = await sender.Send(sendBytes, clientId);
+				if (sendPacketLength == 0)
 				{
-					this._service.Send(clientId);
+					// disconnected.
+					return null; // throw exception?
 				}
 
 				// await receive response.
 				var response = await tcs.Task;
-				
-				return PacketHelper.ParseArgument<TResult>(response);
-			});			
+
+				return _mediator.ParseArgument<TResult>(response);
+			});
 		}
 
 		internal static void ReceiveServiceCallback(IAsyncResult ar)
@@ -89,9 +97,23 @@ namespace Communication
 				{
 					var readBuffer = new byte[read];
 					Array.Copy(stateObject.buffer, readBuffer, read);
-					MainSynchronizationContext.Post(d =>
+
+					var tcs = new TaskCompletionSource<bool>();
+					_socketSycnContext.Post(d =>
 					{
-						ResponseAwaits.MatchResponse(readBuffer);
+						tcs.SetResult(ResponseAwaits.MatchResponse(readBuffer));
+					});
+
+					tcs.Task.ContinueWith( t => 
+					{
+						var isServieCall = t.Result;
+						if (isServieCall == false)
+						{
+							return;
+						}
+
+						var result = _mediator.Execute(readBuffer);
+						SendResponse(socket, result);
 					});
 				}
 
@@ -102,6 +124,11 @@ namespace Communication
 				Console.WriteLine(ex);
 				socket.Close();
 			}
+		}
+
+		private static void SendResponse(Socket clientSocket, byte[] packet)
+		{
+			clientSocket.SendTaskAsync(packet);
 		}
 
 		public void Dispose()
@@ -115,6 +142,8 @@ namespace Communication
 			{
 				this._outgoing.Dispose();
 			}
+
+			_socketSycnContext.Dispose();
 		}
 	}
 }

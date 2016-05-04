@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace Common.Communication
+namespace Communication.AsyncResponse
 {
 	public class ResponseAwaits
 	{
@@ -15,7 +13,12 @@ namespace Common.Communication
 			_reponseCollection.Add(hash, tcs);
 		}
 
-		public static void MatchResponse(byte[] packet)
+		/// <summary>
+		/// Check the packet is call service or response from preamble packet.
+		/// </summary>
+		/// <param name="packet"></param>
+		/// <returns>true if call service packet; or if it's response packet, return false.</returns>
+		public static bool MatchResponse(byte[] packet)
 		{
 			var checkPacket = new byte[4];
 			Array.Copy(packet, checkPacket, 4);
@@ -23,9 +26,8 @@ namespace Common.Communication
 
 			if (_reponseCollection.ContainsKey(preamble) == false)
 			{
-				// it's receive callback.
-				// TODO : implement
-				return;
+				// it's receive service call.				
+				return true;
 			}
 
 			var tcs = _reponseCollection[preamble];
@@ -34,6 +36,8 @@ namespace Common.Communication
 			_reponseCollection.Remove(preamble);
 
 			tcs.SetResult(packet);
+
+			return false;
 		}
 	}
 }
