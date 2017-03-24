@@ -40,7 +40,6 @@ namespace Mediator
 						context.InterfaceType = @interface;
 						context.Method = methodInfo.Name;
 						context.ArgumentType = parameters[0].ParameterType;
-						//context.ReturnType = methodInfo.ReturnType;
 
 						var parameterExpresssion = Expression.Parameter(parameters[0].ParameterType);
 						var call = Expression.Call(Expression.Constant(instance), methodInfo, parameterExpresssion);
