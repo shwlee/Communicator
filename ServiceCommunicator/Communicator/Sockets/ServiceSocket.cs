@@ -20,7 +20,7 @@ namespace Communication.Sockets
 			this._socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 			this._socket.Bind(ipEndpoint);
 			this._socket.Listen(backlog);
-			this._socket.BeginAccept(OnAccept, _socket);
+			this._socket.BeginAccept(this.OnAccept, this._socket);
 		}
 
 		private void OnAccept(IAsyncResult ar)
