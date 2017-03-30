@@ -29,9 +29,7 @@ namespace ServiceCommunicator
             Console.ReadKey();
 
             var context = instanceMediator.GetMediatorContext("IServiceStatus", "GetServiceStatus");
-            var result = context.Execute.DynamicInvoke(new GetServiceStatusRequest());
-
-			Console.WriteLine(result);
+            var result = context.Execute.DynamicInvoke(new GetServiceStatusRequest());		
 			
             Console.ReadKey();
         }
