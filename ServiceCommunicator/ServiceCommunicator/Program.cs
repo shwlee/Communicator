@@ -32,6 +32,8 @@ namespace ServiceCommunicator
             var result = context.Execute.DynamicInvoke(new GetServiceStatusRequest());
 
             Console.ReadKey();
+			
+			Console.ReadKey();
         }
     }
 }
