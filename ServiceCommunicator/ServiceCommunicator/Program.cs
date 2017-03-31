@@ -23,7 +23,7 @@ namespace ServiceCommunicator
                 "IServiceStatus",
                 "SetServiceStatus",
                 new SetServiceStatusRequest { ClientHash = clientHash, Status = true },
-                clientHash);
+                clientHash); // TODO : 문자열 이외 다른 방법으로 패킷생성 필요.
             var resultPacket = instanceMediator.Execute(packets);
 
             Console.ReadKey();
