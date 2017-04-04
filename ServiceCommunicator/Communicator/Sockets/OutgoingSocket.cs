@@ -15,7 +15,7 @@ namespace Communication.Sockets
 			this._socket.Connect(ip, port);
 
 			var state = new StateObject { WorkSocket = this._socket };
-			this._socket.BeginReceive(state.buffer, 0, StateObject.BUFFER_SIZE, SocketFlags.None, Communicator.ReceiveServiceCallback, state);
+			this._socket.BeginReceive(state.Buffer, 0, StateObject.BUFFER_SIZE, SocketFlags.None, Communicator.ReceiveServiceCallback, state);
 		}
 
 		public async Task<int> Send(byte[] packet, Guid clientId = default(Guid))

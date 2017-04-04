@@ -40,14 +40,14 @@ namespace Communication.Sockets
 			{
 				alreadyConnected.WorkSocket.Disconnect(false);
 				alreadyConnected.WorkSocket.Dispose();
-				alreadyConnected.buffer = null;
+				alreadyConnected.Buffer = null;
 				this._connectedClients.Remove(alreadyConnected);
 			}
 
 			var state = new StateObject { ClientId = Guid.NewGuid(), WorkSocket = clientSocket };
 			this._connectedClients.Add(state);
 
-			clientSocket.BeginReceive(state.buffer, 0, StateObject.BUFFER_SIZE, SocketFlags.None, Communicator.ReceiveServiceCallback, state);
+			clientSocket.BeginReceive(state.Buffer, 0, StateObject.BUFFER_SIZE, SocketFlags.None, Communicator.ReceiveServiceCallback, state);
 
 			serviceSocket.BeginAccept(OnAccept, serviceSocket);
 		}		

@@ -96,7 +96,7 @@ namespace Communication
 				if (read > 0)
 				{
 					var readBuffer = new byte[read];
-					Array.Copy(stateObject.buffer, readBuffer, read);
+					Array.Copy(stateObject.Buffer, readBuffer, read);
 
 					var tcs = new TaskCompletionSource<bool>();
 					_socketSycnContext.Post(d =>
@@ -117,7 +117,7 @@ namespace Communication
 					});
 				}
 
-				socket.BeginReceive(stateObject.buffer, 0, StateObject.BUFFER_SIZE, SocketFlags.None, ReceiveServiceCallback, stateObject);
+				socket.BeginReceive(stateObject.Buffer, 0, StateObject.BUFFER_SIZE, SocketFlags.None, ReceiveServiceCallback, stateObject);
 			}
 			catch (Exception ex)
 			{
