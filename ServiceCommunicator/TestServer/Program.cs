@@ -18,7 +18,7 @@ namespace Server
             Console.WriteLine("Service Start! Port : {0}", ServicePort);
             Console.ReadLine();
 
-            Console.ReadKey();
+            communicator.Dispose();
         }
     }
 }

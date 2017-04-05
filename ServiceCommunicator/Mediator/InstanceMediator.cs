@@ -70,8 +70,10 @@ namespace Mediator
 			{
 				using (var binaryReader = new BinaryReader(memoryStream))
 				{
-					var preambleBytes = binaryReader.ReadBytes(4);
-					var preamble = BitConverter.ToInt32(preambleBytes, 0);
+					//var preambleBytes = binaryReader.ReadBytes(4);
+					//var preamble = BitConverter.ToInt32(preambleBytes, 0);
+                    // jump preamble
+                    binaryReader.ReadBytes(4);
 
 					var interfaceNameSizeBytes = binaryReader.ReadBytes(4);
 					var interfaceNameSize = BitConverter.ToInt32(interfaceNameSizeBytes, 0);
@@ -82,11 +84,15 @@ namespace Mediator
 					var argSizeBytes = binaryReader.ReadBytes(4);
 					var argSize = BitConverter.ToInt32(argSizeBytes, 0);
 
-					var interfaceNameBytes = binaryReader.ReadBytes(interfaceNameSize);
-					var interfaceName = Encoding.UTF8.GetString(interfaceNameBytes);
+					//var interfaceNameBytes = binaryReader.ReadBytes(interfaceNameSize);
+					//var interfaceName = Encoding.UTF8.GetString(interfaceNameBytes);
+                    // jump interface name
+                    binaryReader.ReadBytes(interfaceNameSize);
 
-					var methodNameBytes = binaryReader.ReadBytes(methodNameSize);
-					var methodName = Encoding.UTF8.GetString(methodNameBytes);
+					//var methodNameBytes = binaryReader.ReadBytes(methodNameSize);
+					//var methodName = Encoding.UTF8.GetString(methodNameBytes);
+                    // jump method name
+				    binaryReader.ReadBytes(methodNameSize);
 
 					var argBytes = binaryReader.ReadBytes(argSize);
 					using (var argStream = new MemoryStream(argBytes))

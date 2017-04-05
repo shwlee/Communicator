@@ -41,11 +41,25 @@ namespace Common.Threading
 
 			while (_isDisposed == false)
 			{
-				try
-				{
-					var item = this._workingCollection.Take();
-					item();
-				}
+			    try
+			    {
+			        if (this._workingCollection == null)
+			        {
+			            return;
+			        }
+
+			        if (this._workingCollection.IsCompleted)
+			        {
+			            return;
+			        }
+
+			        var item = this._workingCollection.Take();
+			        item();
+			    }
+			    catch (ThreadAbortException tex)
+			    {
+                    Debug.WriteLine("Worker close : " + tex);
+			    }
 				catch (Exception ex)
 				{
 					Debug.WriteLine("Worker exception : " + ex);
@@ -149,11 +163,14 @@ namespace Common.Threading
 		{
 			this._isDisposed = true;
 
-			this._workerThread.Abort();
+            // awake blocking collection.
+            this._workingCollection.Add(() => {});
+
+            this._workerThread.Abort();
 			this._workerThread = null;
 
-			this._workingCollection.Dispose();
-			this._workingCollection = null;
+            this._workingCollection.Dispose();
+            this._workingCollection = null;
 		}
 	}
 }

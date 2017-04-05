@@ -11,139 +11,166 @@ using Mediator;
 
 namespace Communication
 {
-	public class Communicator
-	{
-		private static StaSynchronizationContext _socketSycnContext = new StaSynchronizationContext("SocketSynchronizationContext");
+    public class Communicator
+    {
+        private static StaSynchronizationContext _socketSycnContext = new StaSynchronizationContext("SocketSynchronizationContext");
 
-		private static InstanceMediator _mediator = new InstanceMediator();
+        private static InstanceMediator _mediator = new InstanceMediator();
 
-		private ServiceSocket _service = new ServiceSocket();
+        private ServiceSocket _service = new ServiceSocket();
 
-		// allow only 1 connect
-		public OutgoingSocket _outgoing;
+        // allow only 1 connect
+        private OutgoingSocket _outgoing;
 
-		public void Initialize(params object[] instances)
-		{
-			_mediator.SetInstance(instances);
-		}
+        public Guid ClientId
+        {
+            get
+            {
+                if (this._outgoing == null)
+                {
+                    return default(Guid);
+                }
 
-		public void StartService(int port, int backlog)
-		{
-			this._service.StartService(port, backlog);
-		}
+                return this._outgoing.ClientId;
+            }
+        }
 
-		public void ConnectToService(string ip, int port)
-		{
-			this._outgoing = new OutgoingSocket();
-			this._outgoing.Connect(ip, port);
-		}
+        public void Initialize(params object[] instances)
+        {
+            _mediator.SetInstance(instances);
+        }
 
-		public async Task<TResult> Send<TInterface, TResult>(Expression<Func<TInterface, TResult>> method, Guid clientId = default(Guid))
-			where TInterface : class
-			where TResult : class
-		{
-			return await Task.Run(async () =>
-			{
-				// get protocol hash and TaskCompletionSource save.
-				var tcs = new TaskCompletionSource<byte[]>();
-				var hash = ProtocolHash.GetProtocolHash();
-				_socketSycnContext.Send(d =>
-				{
-					ResponseAwaits.Insert(hash, tcs); // TODO : consider synchronization problem.
-				});
-				
-				// hydration			
-				var packet = HydrateExpression.Get(method);
-				packet.RequestHash = hash;
+        public void StartService(int port, int backlog)
+        {
+            this._service.StartService(port, backlog);
+        }
 
-				// get Packet.
-				var sendBytes = PacketGenerator.GeneratePacket(packet);
+        public void ConnectToService(string ip, int port)
+        {
+            this._outgoing = new OutgoingSocket();
+            this._outgoing.Connect(ip, port);
+        }
 
-				// send
-				var sender = clientId == default(Guid) ? (ISocketSender)this._outgoing : (ISocketSender)this._service;				
-				if (sender == null)
-				{
-					// disconnected or not connect yet.
-					return null; // throw exception?
-				}
+        public async Task<TResult> Send<TInterface, TResult>(Expression<Func<TInterface, TResult>> method, Guid clientId = default(Guid))
+            where TInterface : class
+            where TResult : class
+        {
+            return await Task.Run(async () =>
+            {
+                // get protocol hash and TaskCompletionSource save.
+                var tcs = new TaskCompletionSource<byte[]>();
+                var hash = ProtocolHash.GetProtocolHash();
+                _socketSycnContext.Send(d =>
+                {
+                    ResponseAwaits.Insert(hash, tcs); // TODO : consider synchronization problem.
+                });
 
-				var sendPacketLength = await sender.Send(sendBytes, clientId);
-				if (sendPacketLength == 0)
-				{
-					// disconnected.
-					return null; // throw exception?
-				}
+                // hydration			
+                var packet = HydrateExpression.Get(method);
+                packet.RequestHash = hash;
 
-				// await receive response.
-				var response = await tcs.Task;
+                // get Packet.
+                var sendBytes = PacketGenerator.GeneratePacket(packet);
 
-				return _mediator.ParseArgument<TResult>(response);
-			});
-		}
+                // check sender
+                // if passed client id, send to service; not passed client id, service response or push to client.
+                var sender = clientId == default(Guid) ? (ISocketSender)this._service : this._outgoing;
+                if (sender == null)
+                {
+                    // disconnected or not connect yet.
+                    return null; // throw exception?
+                }
 
-		internal static void ReceiveServiceCallback(IAsyncResult ar)
-		{
-			var stateObject = ar.AsyncState as StateObject;
-			if (stateObject == null)
-			{
-				return;
-			}
+                var sendPacketLength = await sender.Send(sendBytes, clientId);
+                if (sendPacketLength == 0)
+                {
+                    // disconnected.
+                    return null; // throw exception?
+                }
 
-			var socket = stateObject.WorkSocket;
-			try
-			{
-				var read = socket.EndReceive(ar);
-				if (read > 0)
-				{
-					var readBuffer = new byte[read];
-					Array.Copy(stateObject.Buffer, readBuffer, read);
+                // await receive response.
+                var response = await tcs.Task;
 
-					var tcs = new TaskCompletionSource<bool>();
-					_socketSycnContext.Post(d =>
-					{
-						tcs.SetResult(ResponseAwaits.MatchResponse(readBuffer));
-					});
+                return _mediator.ParseArgument<TResult>(response);
+            });
+        }
 
-					tcs.Task.ContinueWith( t => 
-					{
-						var isServieCall = t.Result;
-						if (isServieCall == false)
-						{
-							return;
-						}
+        internal static async void ReceiveServiceCallback(IAsyncResult ar)
+        {
+            var stateObject = ar.AsyncState as StateObject;
+            if (stateObject == null)
+            {
+                return;
+            }
 
-						var result = _mediator.Execute(readBuffer);
-						SendResponse(socket, result);
-					});
-				}
+            var socket = stateObject.WorkSocket;
+            try
+            {
+                var read = socket.EndReceive(ar);
+                if (read > 0)
+                {
+                    await Task.Run(async () =>
+                    {
+                        var readBuffer = new byte[read];
+                        Array.Copy(stateObject.Buffer, readBuffer, read);
 
-				socket.BeginReceive(stateObject.Buffer, 0, StateObject.BUFFER_SIZE, SocketFlags.None, ReceiveServiceCallback, stateObject);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine(ex);
-				socket.Close();
-			}
-		}
+                        var tcs = new TaskCompletionSource<bool>();
+                        _socketSycnContext.Post(d =>
+                        {
+                            tcs.SetResult(ResponseAwaits.MatchResponse(readBuffer));
+                        });
 
-		private static void SendResponse(Socket clientSocket, byte[] packet)
-		{
-			clientSocket.SendTaskAsync(packet);
-		}
+                        var isServiceCall = await tcs.Task;
+                        if (isServiceCall == false)
+                        {
+                            return;
+                        }
 
-		public void Dispose()
-		{
-			if (this._service != null)
-			{
-				this._service.Dispose();
-			}
+                        var result = _mediator.Execute(readBuffer);
+                        await SendResponse(socket, result);
+                    });
+                }
 
-			if (this._outgoing != null)
-			{
-				this._outgoing.Dispose();
-			}
+                socket.BeginReceive(stateObject.Buffer, 0, StateObject.BUFFER_SIZE, SocketFlags.None,
+                    ReceiveServiceCallback, stateObject);
+            }
+            catch (ObjectDisposedException dex)
+            {
+                Console.WriteLine("Socket Closed! {0}", stateObject.ClientId);
+            }
+            catch (SocketException se)
+            {
+                if (se.ErrorCode == 10054)
+                {
+                    // TODO : add to connection close message and handle to socket management
+                    Console.WriteLine("Socket Closed! {0}", stateObject.ClientId);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                socket.Close();
+            }
+        }
 
-			_socketSycnContext.Dispose();
-		}
-	}
+        private static async Task SendResponse(Socket clientSocket, byte[] packet)
+        {
+            await clientSocket.SendTaskAsync(packet);
+        }
+
+        public void Dispose()
+        {
+            if (this._service != null)
+            {
+                this._service.Dispose();
+            }
+
+            if (this._outgoing != null)
+            {
+                this._outgoing.Dispose();
+            }
+
+            _socketSycnContext.Dispose();
+        }
+    }
 }
