@@ -109,26 +109,26 @@ namespace Communication
                 var read = socket.EndReceive(ar);
                 if (read > 0)
                 {
-                    await Task.Run(async () =>
+                    Console.WriteLine("[Received] Read Packets : {0}", read);
+                    
+                    // TODO : need sync handling and packet tokenizer.
+                    var readBuffer = new byte[read];
+                    Array.Copy(stateObject.Buffer, readBuffer, read);
+
+                    var tcs = new TaskCompletionSource<bool>();
+                    _socketSycnContext.Post(d =>
                     {
-                        var readBuffer = new byte[read];
-                        Array.Copy(stateObject.Buffer, readBuffer, read);
-
-                        var tcs = new TaskCompletionSource<bool>();
-                        _socketSycnContext.Post(d =>
-                        {
-                            tcs.SetResult(ResponseAwaits.MatchResponse(readBuffer));
-                        });
-
-                        var isServiceCall = await tcs.Task;
-                        if (isServiceCall == false)
-                        {
-                            return;
-                        }
-
-                        var result = _mediator.Execute(readBuffer);
-                        await SendResponse(socket, result);
+                        tcs.SetResult(ResponseAwaits.MatchResponse(readBuffer));
                     });
+
+                    var isServiceCall = await tcs.Task;
+                    if (isServiceCall == false)
+                    {
+                        return;
+                    }
+
+                    var result = _mediator.Execute(readBuffer);
+                    await SendResponse(socket, result);
                 }
 
                 socket.BeginReceive(stateObject.Buffer, 0, StateObject.BUFFER_SIZE, SocketFlags.None,
@@ -137,6 +137,7 @@ namespace Communication
             catch (ObjectDisposedException dex)
             {
                 Console.WriteLine("Socket Closed! {0}", stateObject.ClientId);
+                Console.WriteLine();
             }
             catch (SocketException se)
             {
@@ -145,11 +146,13 @@ namespace Communication
                     // TODO : add to connection close message and handle to socket management
                     Console.WriteLine("Socket Closed! {0}", stateObject.ClientId);
                 }
+                Console.WriteLine();
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
                 socket.Close();
+                Console.WriteLine();
             }
         }
 

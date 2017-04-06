@@ -1,8 +1,8 @@
-﻿using Define.Classes;
-using System;
+﻿using System;
 using Communication;
+using Define.Classes;
 
-namespace Server
+namespace TestServer
 {
     class Program
     {

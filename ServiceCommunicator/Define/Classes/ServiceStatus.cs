@@ -15,14 +15,9 @@ namespace Define.Classes
 
 		public SetServiceStatusResponse SetServiceStatus(SetServiceStatusRequest request)
 		{
-            Console.WriteLine("Received : SetServiceStatus!");
-		    var isSuccess = false;
-            if (request != null && request.Status)
-            {
-                isSuccess = request.ClientHash > 10;
-            }
-
-            return new SetServiceStatusResponse { IsSuccess = isSuccess };
+            Console.WriteLine("[IServiceStatus SetServiceStatus] ClinetHash : {0}", request.ClientHash);
+		    var clientHash = request.ClientHash++;
+            return new SetServiceStatusResponse { IsSuccess = true, ClientHash = clientHash };
 		}
 	}
 }

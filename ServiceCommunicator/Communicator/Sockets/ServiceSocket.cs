@@ -70,6 +70,8 @@ namespace Communication.Sockets
                 {
                     var clientIdPacket = state.ClientId.ToByteArray();
                     clientSocket.Send(clientIdPacket);
+                    
+                    Console.WriteLine("[Connect client] {0}", state.ClientId);
 
                     clientSocket.BeginReceive(state.Buffer, 0, StateObject.BUFFER_SIZE, SocketFlags.None, Communicator.ReceiveServiceCallback, state);
                 }, TaskCreationOptions.LongRunning);
@@ -79,6 +81,7 @@ namespace Communication.Sockets
             catch (ObjectDisposedException dex)
             {
                 Console.WriteLine("Socket Closed!");
+                Console.WriteLine();
             }
             catch (SocketException se)
             {
@@ -87,6 +90,7 @@ namespace Communication.Sockets
                     // TODO : add to connection close message and handle to socket management
                     Console.WriteLine("Socket Closed! ");
                 }
+                Console.WriteLine();
             }
             catch (Exception ex)
             {

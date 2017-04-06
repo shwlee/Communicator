@@ -9,8 +9,9 @@ namespace Define.Classes.Args
 		public bool IsOnLine { get; set; }
 	}
 
-	[ProtoContract()]
+	[ProtoContract]
 	public class SetServiceStatusResponse : Response
-	{		
+	{
+        public int ClientHash { get; set; }
 	}
 }

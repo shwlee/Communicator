@@ -1,17 +1,16 @@
 ﻿using System;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Communication;
 using Define.Classes.Args;
 using Define.Interfaces;
 
-namespace Client
+namespace TestClient
 {
     class Program
     {
         const int ServicePort = 8009;
-        //const string ServiceIp = "172.16.10.70";
-        const string ServiceIp = "localhost";
+        const string ServiceIp = "172.16.10.70";
+        //const string ServiceIp = "localhost";
 
         static void Main(string[] args)
         {
@@ -26,7 +25,12 @@ namespace Client
 
             Console.ReadLine();
 
-            SendTest(communicator, clientId);
+            for (int i = 0; i < 10; i++)
+            {
+                SendTest(communicator, clientId);
+
+                _sendCount++;
+            }
 
             Console.ReadLine();
 
@@ -35,24 +39,28 @@ namespace Client
             Console.ReadLine();
         }
 
+        private static int _sendCount;
+
         private static async Task SendTest(Communicator com, Guid clientId)
         {
-            var response = await com.Send((IServiceStatus service) => service.SetServiceStatus(new SetServiceStatusRequest
+            var hash = _sendCount;
+            var request = new SetServiceStatusRequest
             {
-                ClientHash = 20,
+                ClientHash = hash,
                 Status = true
-            }), clientId);
-            
-            Console.WriteLine("Received Response. IsSuccess : {0}", response.IsSuccess);
-        }
+            };
+            Console.WriteLine("[Start Send] Hash : {0}", hash);
+            var response = await com.Send((IServiceStatus service) => service.SetServiceStatus(request), clientId);
 
-        private static async Task<TResult> SendAsync<TInterface, TResult>(Expression<Func<TInterface, TResult>> method, Communicator com)
-            where TInterface : class
-            where TResult : class
-        {
-            var response = await com.Send(method);
+            Console.WriteLine("[Send] Hash : {0}", hash);
 
-            return response;
+            if (response == null)
+            {
+                Console.WriteLine("[Response is null] Hash : {0}", hash);
+                return;
+            }
+
+            Console.WriteLine("Received Response. IsSuccess : {0}, ClientHash : {1}", response.IsSuccess, response.ClientHash);
         }
     }
 }
