@@ -5,19 +5,19 @@ using Define.Interfaces;
 
 namespace Define.Classes
 {
-	public class ServiceStatus : IServiceStatus
-	{
-		public GetServiceStatusResponse GetServiceStatus(GetServiceStatusRequest request)
-		{
+    public class ServiceStatus : IServiceStatus
+    {
+        public GetServiceStatusResponse GetServiceStatus(GetServiceStatusRequest request)
+        {
             Console.WriteLine("Received : GetServiceStatus!");
-			return new GetServiceStatusResponse { IsOnLine = true, IsSuccess = true };			
-		}
+            return new GetServiceStatusResponse { IsOnLine = true, IsSuccess = true };
+        }
 
-		public SetServiceStatusResponse SetServiceStatus(SetServiceStatusRequest request)
-		{
+        public SetServiceStatusResponse SetServiceStatus(SetServiceStatusRequest request)
+        {
             Console.WriteLine("[IServiceStatus SetServiceStatus] ClinetHash : {0}", request.ClientHash);
-		    var clientHash = request.ClientHash++;
-            return new SetServiceStatusResponse { IsSuccess = true, ClientHash = clientHash };
-		}
-	}
+            var clientHash = request.ClientHash;
+            return new SetServiceStatusResponse { IsSuccess = true, ClientHash = ++clientHash };
+        }
+    }
 }

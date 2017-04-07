@@ -8,6 +8,6 @@ namespace Define.Classes.BaseArgs
 	[ProtoInclude(20001,  typeof(SetServiceStatusRequest))]
 	public class Request
 	{
-		public int ClientHash { get; set; }
+	    public int ClientHash;
 	}
 }

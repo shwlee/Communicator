@@ -11,6 +11,6 @@ namespace Define.Classes.Args
 	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
 	public class SetServiceStatusRequest : Request
 	{
-		public bool Status { get; set; }
+	    public bool Status;
 	}
 }
