@@ -30,14 +30,30 @@ namespace Communication.AsyncResponse
 				return true;
 			}
 
-			var tcs = _reponseCollection[preamble];
+            var tcs = _reponseCollection[preamble];
 
-			// remove to handled response.
-			_reponseCollection.Remove(preamble);
+            // remove to handled response.
+            _reponseCollection.Remove(preamble);
 
-			tcs.SetResult(packet);
+            tcs.SetResult(packet);
 
 			return false;
 		}
+
+	    public static TaskCompletionSource<byte[]> GetResponseSource(int hash)
+	    {
+            if (_reponseCollection.ContainsKey(hash) == false)
+            {
+                // it's receive service call.				
+                return null;
+            }
+
+            var tcs = _reponseCollection[hash];
+
+            // remove to handled response.
+            _reponseCollection.Remove(hash);
+
+	        return tcs;
+	    }
 	}
 }

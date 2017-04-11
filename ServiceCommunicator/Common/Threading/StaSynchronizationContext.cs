@@ -39,7 +39,7 @@ namespace Common.Threading
 		{
 			SynchronizationContext.SetSynchronizationContext(this);
 
-			while (_isDisposed == false)
+			while (this._isDisposed == false)
 			{
 			    try
 			    {
@@ -91,7 +91,7 @@ namespace Common.Threading
 			try
 			{
 				var future = new TaskCompletionSource<bool>();
-				this._workingCollection.TryAdd(() => WaitForWorkDone(d, state, future));
+				this._workingCollection.TryAdd(() => this.WaitForWorkDone(d, state, future));
 				future.Task.Wait();
 			}
 			catch (Exception ex)
@@ -128,7 +128,7 @@ namespace Common.Threading
 		public void Dispose()
 		{
 			Console.WriteLine("SyncContext Dispose");
-			DoDispose(true);
+			this.DoDispose(true);
 			GC.SuppressFinalize(this);
 		}
 

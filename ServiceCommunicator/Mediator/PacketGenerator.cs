@@ -11,7 +11,7 @@ namespace Mediator
 		// preamble : request hash (4),
 		// header : interface name size (4) + method name size (4) + arg size (4),
 		// body : interface name + method name + serialized arg.
-		
+
 		public static byte[] GeneratePacket(string interfaceName, string methodName, object arg, int requestHash)
 		{
 			var preamble = BitConverter.GetBytes(requestHash);

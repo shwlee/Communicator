@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Common.Interfaces;
 using Common.Threading;
@@ -112,27 +113,21 @@ namespace Communication
                     Console.WriteLine("[Received] Read Packets : {0}", read);
                     
                     // TODO : need sync handling and packet tokenizer.
+
+                    if (stateObject.PacketHandler == null)
+                    {
+                        stateObject.PacketHandler = new PacketHandler(socket, _mediator);
+                    }
+                    
                     var readBuffer = new byte[read];
                     Array.Copy(stateObject.Buffer, readBuffer, read);
-
-                    var tcs = new TaskCompletionSource<bool>();
-                    _socketSycnContext.Post(d =>
+                    _socketSycnContext.Send(d =>
                     {
-                        tcs.SetResult(ResponseAwaits.MatchResponse(readBuffer));
+                        stateObject.PacketHandler.HandlePackets(stateObject.Buffer, read);
                     });
-
-                    var isServiceCall = await tcs.Task;
-                    if (isServiceCall == false)
-                    {
-                        return;
-                    }
-
-                    var result = _mediator.Execute(readBuffer);
-                    await SendResponse(socket, result);
                 }
 
-                socket.BeginReceive(stateObject.Buffer, 0, StateObject.BUFFER_SIZE, SocketFlags.None,
-                    ReceiveServiceCallback, stateObject);
+                socket.BeginReceive(stateObject.Buffer, 0, StateObject.BUFFER_SIZE, SocketFlags.None, ReceiveServiceCallback, stateObject);
             }
             catch (ObjectDisposedException dex)
             {
@@ -155,12 +150,7 @@ namespace Communication
                 Console.WriteLine();
             }
         }
-
-        private static async Task SendResponse(Socket clientSocket, byte[] packet)
-        {
-            await clientSocket.SendTaskAsync(packet);
-        }
-
+        
         public void Dispose()
         {
             if (this._service != null)

@@ -12,5 +12,7 @@ namespace Communication.Sockets
 		public const int BUFFER_SIZE = 2048;
 
 		public byte[] Buffer = new byte[BUFFER_SIZE];
+
+        public PacketHandler PacketHandler { get; set; }
 	}
 }
