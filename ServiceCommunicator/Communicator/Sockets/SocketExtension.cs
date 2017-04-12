@@ -6,7 +6,7 @@ namespace Communication.Sockets
 {
 	public static class SocketExtension
 	{
-		public static async Task<int> SendTaskAsync(this Socket socket, byte[] packet)
+		public static async Task<int> SendPacketAsync(this Socket socket, byte[] packet)
 		{
 		    try
 		    {

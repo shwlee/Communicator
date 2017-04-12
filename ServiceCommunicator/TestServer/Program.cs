@@ -16,9 +16,25 @@ namespace TestServer
             communicator.StartService(ServicePort, int.MaxValue);
 
             Console.WriteLine("Service Start! Port : {0}", ServicePort);
-            Console.ReadLine();
+
+            var isContinue = true;
+            while (isContinue)
+            {
+                var input = Console.ReadLine();
+                switch (input)
+                {
+                    case "c": // test memory
+                        GC.Collect();
+                        break;
+                    case "":
+                    case "q":
+                        isContinue = false;
+                        break;
+                }
+            }
 
             communicator.Dispose();
+            Console.ReadLine();
         }
     }
 }

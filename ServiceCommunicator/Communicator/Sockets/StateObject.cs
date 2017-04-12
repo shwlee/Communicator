@@ -3,16 +3,36 @@ using System.Net.Sockets;
 
 namespace Communication.Sockets
 {
-	public class StateObject
+	class StateObject : IDisposable
 	{
-		public Guid ClientId { get; set; }
+        internal Guid ClientId { get; set; }
 
-		public Socket WorkSocket { get; set; }
+        internal Socket WorkSocket { get; set; }
 
-		public const int BUFFER_SIZE = 2048;
+        internal const int BUFFER_SIZE = 2048;
 
-		public byte[] Buffer = new byte[BUFFER_SIZE];
+        internal byte[] Buffer = new byte[BUFFER_SIZE];
 
-        public PacketHandler PacketHandler { get; set; }
-	}
+        internal PacketHandler PacketHandler { get; set; }
+
+        #region IDisposable Members
+
+        public void Dispose()
+        {
+            if (this.WorkSocket != null)
+            {
+                this.WorkSocket.Dispose();
+                this.WorkSocket = null;
+            }
+
+            if (this.PacketHandler != null)
+            {
+                this.PacketHandler.Dispose();
+            }
+
+            this.Buffer = null;
+        }
+
+        #endregion
+    }
 }

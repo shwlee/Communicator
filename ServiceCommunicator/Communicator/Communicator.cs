@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Net.Sockets;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Common.Interfaces;
-using Common.Threading;
 using Communication.AsyncResponse;
 using Communication.Hydrations;
 using Communication.Sockets;
@@ -14,11 +12,9 @@ namespace Communication
 {
     public class Communicator
     {
-        private static StaSynchronizationContext _socketSycnContext = new StaSynchronizationContext("SocketSynchronizationContext");
-
         private static InstanceMediator _mediator = new InstanceMediator();
 
-        private ServiceSocket _service = new ServiceSocket();
+        private ServiceSocket _service;
 
         // allow only 1 connect
         private OutgoingSocket _outgoing;
@@ -43,6 +39,7 @@ namespace Communication
 
         public void StartService(int port, int backlog)
         {
+            this._service = new ServiceSocket();
             this._service.StartService(port, backlog);
         }
 
@@ -61,10 +58,8 @@ namespace Communication
                 // get protocol hash and TaskCompletionSource save.
                 var tcs = new TaskCompletionSource<byte[]>();
                 var hash = ProtocolHash.GetProtocolHash();
-                _socketSycnContext.Send(d =>
-                {
-                    ResponseAwaits.Insert(hash, tcs); // TODO : consider synchronization problem.
-                });
+                
+                ResponseAwaits.Insert(hash, tcs); // TODO : consider synchronization problem.
 
                 // hydration			
                 var packet = HydrateExpression.Get(method);
@@ -96,7 +91,17 @@ namespace Communication
             });
         }
 
-        internal static async void ReceiveServiceCallback(IAsyncResult ar)
+        internal static void ReceiveServiceCallback(IAsyncResult ar)
+        {
+            InternalCallback(ar, PacketDirection.Incomming);
+        }
+
+        internal static void ReceiveResponseCallback(IAsyncResult ar)
+        {
+            InternalCallback(ar, PacketDirection.Outgoing);
+        }
+
+        private static void InternalCallback(IAsyncResult ar, PacketDirection direction)
         {
             var stateObject = ar.AsyncState as StateObject;
             if (stateObject == null)
@@ -110,28 +115,27 @@ namespace Communication
                 var read = socket.EndReceive(ar);
                 if (read > 0)
                 {
+                    // TODO : need packet logging.
+
                     Console.WriteLine("[Received] Read Packets : {0}", read);
                     
-                    // TODO : need sync handling and packet tokenizer.
-
                     if (stateObject.PacketHandler == null)
                     {
                         stateObject.PacketHandler = new PacketHandler(socket, _mediator);
                     }
-                    
-                    var readBuffer = new byte[read];
-                    Array.Copy(stateObject.Buffer, readBuffer, read);
-                    _socketSycnContext.Send(d =>
-                    {
-                        stateObject.PacketHandler.HandlePackets(stateObject.Buffer, read);
-                    });
+
+                    stateObject.PacketHandler.HandlePackets(stateObject.Buffer, read);
                 }
 
-                socket.BeginReceive(stateObject.Buffer, 0, StateObject.BUFFER_SIZE, SocketFlags.None, ReceiveServiceCallback, stateObject);
+                var callback = direction == PacketDirection.Incomming ? 
+                    (AsyncCallback)ReceiveServiceCallback : ReceiveResponseCallback;
+
+                socket.BeginReceive(stateObject.Buffer, 0, StateObject.BUFFER_SIZE, SocketFlags.None, callback, stateObject);
             }
             catch (ObjectDisposedException dex)
             {
-                Console.WriteLine("Socket Closed! {0}", stateObject.ClientId);
+                Console.WriteLine("{0} Socket Closed! {1}", direction, stateObject.ClientId);
+                stateObject.Dispose();
                 Console.WriteLine();
             }
             catch (SocketException se)
@@ -139,7 +143,8 @@ namespace Communication
                 if (se.ErrorCode == 10054)
                 {
                     // TODO : add to connection close message and handle to socket management
-                    Console.WriteLine("Socket Closed! {0}", stateObject.ClientId);
+                    Console.WriteLine("{0} Socket Closed! {1}", direction, stateObject.ClientId);
+                    stateObject.Dispose();
                 }
                 Console.WriteLine();
             }
@@ -162,8 +167,6 @@ namespace Communication
             {
                 this._outgoing.Dispose();
             }
-
-            _socketSycnContext.Dispose();
         }
     }
 }

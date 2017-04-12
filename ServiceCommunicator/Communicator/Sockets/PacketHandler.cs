@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Sockets;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Common.Threading;
 using Communication.AsyncResponse;
 using Mediator;
 
@@ -15,10 +11,8 @@ namespace Communication.Sockets
     /// <summary>
     /// Packet tokenizing and response from received Packet.
     /// </summary>
-    public class PacketHandler
+    class PacketHandler
     {
-        private static StaSynchronizationContext _socketSycnContext = new StaSynchronizationContext("SocketSynchronizationContext");
-
         private Socket _responseSocket;
 
         private InstanceMediator _mediator;
@@ -29,13 +23,13 @@ namespace Communication.Sockets
 
         private int _lastPosition;
 
-        public PacketHandler(Socket resposeSocket, InstanceMediator mediator)
+        internal PacketHandler(Socket resposeSocket, InstanceMediator mediator)
         {
             this._responseSocket = resposeSocket;
             this._mediator = mediator;
         }
 
-        public async Task HandlePackets(byte[] packet, int readBytes)
+        public void HandlePackets(byte[] packet, int readBytes)
         {
             this._readPosition = 0;
 
@@ -77,7 +71,7 @@ namespace Communication.Sockets
                             var argSize = BitConverter.ToInt32(argSizeBytes, 0);
                             this._readPosition += 4;
 
-                            if (this._lastPosition < (this._readPosition + interfaceNameSize))
+                            if (this._lastPosition < this._readPosition + interfaceNameSize)
                             {
                                 break;
                             }
@@ -94,7 +88,7 @@ namespace Communication.Sockets
                             this._readPosition += methodNameBytes.Length;
 
                             var mediatorContext = this._mediator.GetMediatorContext(interfaceName, methodName);
-                            if (this._lastPosition < (this._readPosition + argSize))
+                            if (this._lastPosition < this._readPosition + argSize)
                             {
                                 break;
                             }
@@ -103,22 +97,17 @@ namespace Communication.Sockets
 
                             var packetLength = this._readPosition - readStart;
                             var completedPacket = new byte[packetLength];
-                            Array.Copy(this._buffer, readStart, completedPacket, 0,  packetLength);
-                            
-                            needCompaction = true;
+                            Array.Copy(this._buffer, readStart, completedPacket, 0, packetLength);
 
-                            var capPacket = completedPacket;
-                            var capPreamble = preamble;
+                            needCompaction = true;
+                            
                             Task.Run(async () =>
                             {
-                                var hash = capPacket;
                                 var tcs = new TaskCompletionSource<bool>();
-                                _socketSycnContext.Post(d =>
-                                {
-                                    tcs.SetResult(ResponseAwaits.MatchResponse(hash));
-                                });
+                                tcs.SetResult(ResponseAwaits.MatchResponse(completedPacket));
 
                                 var isServiceCall = await tcs.Task;
+
                                 if (isServiceCall == false)
                                 {
                                     return;
@@ -134,15 +123,15 @@ namespace Communication.Sockets
                                     var arg = ProtoBuf.Serializer.NonGeneric.Deserialize(mediatorContext.ArgumentType, argStream);
                                     var result = mediatorContext.Execute.DynamicInvoke(arg);
 
-                                    var responsePacket = PacketGenerator.GeneratePacket(string.Empty, string.Empty, result, capPreamble);
-                                    await this._responseSocket.SendTaskAsync(responsePacket);
+                                    var responsePacket = PacketGenerator.GeneratePacket(string.Empty, string.Empty, result, preamble);
+                                    await this._responseSocket.SendPacketAsync(responsePacket);
                                 }
                             });
                         }
                         catch (Exception ex)
                         {
                             Console.WriteLine(ex);
-                        } 
+                        }
                     }
                 }
             }

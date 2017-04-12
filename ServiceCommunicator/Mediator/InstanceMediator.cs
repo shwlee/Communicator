@@ -146,31 +146,6 @@ namespace Mediator
 			}
 		}
 
-		private object Execute<T> (string interfaceName, string method, T parameter)
-			where T : class			
-		{
-			if (this._interfaceContexts.ContainsKey(interfaceName) == false)
-			{
-				// or throw exception?
-				return null;
-			}
-
-			var context = this._interfaceContexts[interfaceName].FirstOrDefault(m => m.Method.Equals(method));
-			if (context == null)
-			{
-				// or throw exception?
-				return null;
-			}
-			
-			try
-			{
-				return context.Execute.DynamicInvoke(parameter);
-			}
-			catch (Exception)
-			{
-				// TODO : need logging.
-				throw;
-			}			
-		}
+		
 	}
 }

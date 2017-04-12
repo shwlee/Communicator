@@ -18,13 +18,13 @@ namespace ServiceCommunicator
             var serviceStatus = new ServiceStatus();
             var instanceMediator = new InstanceMediator();
             instanceMediator.SetInstance(serviceStatus);
-            var clientHash = ProtocolHash.GetProtocolHash();
-            var packets = PacketGenerator.GeneratePacket(
-                "IServiceStatus",
-                "SetServiceStatus",
-                new SetServiceStatusRequest { ClientHash = clientHash, Status = true },
-                clientHash);
-            var resultPacket = instanceMediator.Execute(packets);
+            //var clientHash = ProtocolHash.GetProtocolHash();
+            //var packets = PacketGenerator.GeneratePacket(
+            //    "IServiceStatus",
+            //    "SetServiceStatus",
+            //    new SetServiceStatusRequest { ClientHash = clientHash, Status = true },
+            //    clientHash);
+            //var resultPacket = instanceMediator.Execute(packets);
 
             Console.ReadKey();
 

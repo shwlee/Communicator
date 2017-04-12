@@ -51,6 +51,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Communicator.cs" />
     <Compile Include="Sockets\OutgoingSocket.cs" />
+    <Compile Include="Sockets\PacketDirection.cs" />
     <Compile Include="Sockets\PacketHandler.cs" />
     <Compile Include="Sockets\ServiceSocket.cs" />
     <Compile Include="Sockets\SocketExtension.cs" />

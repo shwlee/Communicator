@@ -41,7 +41,7 @@ namespace Communication.Sockets
                 this.ClientId = new Guid(readBuffer);
                 state.ClientId = this.ClientId;
 
-                serviceSocket.BeginReceive(state.Buffer, 0, StateObject.BUFFER_SIZE, SocketFlags.None, Communicator.ReceiveServiceCallback, state);
+                serviceSocket.BeginReceive(state.Buffer, 0, StateObject.BUFFER_SIZE, SocketFlags.None, Communicator.ReceiveResponseCallback, state);
             }
             catch (Exception ex)
             {
@@ -58,7 +58,7 @@ namespace Communication.Sockets
                 return 0;
             }
 
-            return await this._socket.SendTaskAsync(packet);
+            return await this._socket.SendPacketAsync(packet);
         }
 
         public void Dispose()
@@ -70,6 +70,7 @@ namespace Communication.Sockets
             }
 
             this._socket.Dispose();
+            this._socket = null;
         }
     }
 }

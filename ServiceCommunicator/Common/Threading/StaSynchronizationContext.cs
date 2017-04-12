@@ -121,13 +121,13 @@ namespace Common.Threading
 
 		~StaSynchronizationContext()
 		{
-			Console.WriteLine("SyncContext Finalizer");
+			Console.WriteLine("Call SyncContext Finalizer");
 			DoDispose(false);
 		}
 
 		public void Dispose()
 		{
-			Console.WriteLine("SyncContext Dispose");
+			Console.WriteLine("SyncContext Dispose : {0}", this._workerThread.Name);
 			this.DoDispose(true);
 			GC.SuppressFinalize(this);
 		}

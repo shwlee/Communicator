@@ -54,7 +54,7 @@ namespace Communication.Sockets
                     }
                 });
 
-                var alreadyConnected = this._connectedClients.FirstOrDefault(s => s.WorkSocket.LocalEndPoint.Equals(clientSocket.LocalEndPoint));
+                var alreadyConnected = this._connectedClients.FirstOrDefault(s => s.WorkSocket.RemoteEndPoint.Equals(clientSocket.RemoteEndPoint));
                 if (alreadyConnected != null)
                 {
                     alreadyConnected.WorkSocket.Disconnect(false);
@@ -108,7 +108,7 @@ namespace Communication.Sockets
             }
 
             var clientSocket = connectedClient.WorkSocket;
-            return await clientSocket.SendTaskAsync(packet);
+            return await clientSocket.SendPacketAsync(packet);
         }
 
         public void StopService()

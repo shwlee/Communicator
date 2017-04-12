@@ -25,12 +25,12 @@ namespace TestClient
 
             Console.ReadLine();
 
-            for (int i = 0; i < 50; i++)
-            {
+            //for (int i = 0; i < 50; i++)
+            //{
                 SendTest(communicator, clientId);
 
-                _sendCount++;
-            }
+            //    _sendCount++;
+            //}
 
             Console.ReadLine();
 
