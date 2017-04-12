@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceCommunicator", "ServiceCommunicator\ServiceCommunicator.csproj", "{14A25DD4-32A8-461E-8BB6-5DAD7132445D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestServiceCommunicator", "TestServiceCommunicator\TestServiceCommunicator.csproj", "{14A25DD4-32A8-461E-8BB6-5DAD7132445D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mediator", "Mediator\Mediator.csproj", "{1C1356C0-85A6-4DEE-9F6A-AED52165A0EF}"
 EndProject

@@ -7,8 +7,8 @@
     <ProjectGuid>{14A25DD4-32A8-461E-8BB6-5DAD7132445D}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceCommunicator</RootNamespace>
-    <AssemblyName>ServiceCommunicator</AssemblyName>
+    <RootNamespace>TestServiceCommunicator</RootNamespace>
+    <AssemblyName>TestServiceCommunicator</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

@@ -25,12 +25,12 @@ namespace TestClient
 
             Console.ReadLine();
 
-            //for (int i = 0; i < 50; i++)
-            //{
+            for (int i = 0; i < 50; i++)
+            {
                 SendTest(communicator, clientId);
 
-            //    _sendCount++;
-            //}
+                _sendCount++;
+            }
 
             Console.ReadLine();
 
@@ -49,11 +49,10 @@ namespace TestClient
                 ClientHash = hash,
                 Status = true
             };
+
             Console.WriteLine("[Start Send] Hash : {0}", hash);
+
             var response = await com.Send((IServiceStatus service) => service.SetServiceStatus(request), clientId);
-
-            Console.WriteLine("[Send] Hash : {0}", hash);
-
             if (response == null)
             {
                 Console.WriteLine("[Response is null] Hash : {0}", hash);

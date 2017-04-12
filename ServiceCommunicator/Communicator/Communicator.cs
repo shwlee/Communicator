@@ -49,7 +49,7 @@ namespace Communication
             this._outgoing.Connect(ip, port);
         }
 
-        public async Task<TResult> Send<TInterface, TResult>(Expression<Func<TInterface, TResult>> method, Guid clientId = default(Guid))
+        public async Task<TResult> Send<TInterface, TResult>(Expression<Func<TInterface, TResult>> method, Guid clientId = default(Guid), PacketDirection direction = PacketDirection.Incomming)
             where TInterface : class
             where TResult : class
         {
@@ -70,7 +70,7 @@ namespace Communication
 
                 // check sender
                 // if passed client id, send to service; not passed client id, service response or push to client.
-                var sender = clientId == default(Guid) ? (ISocketSender)this._service : this._outgoing;
+                var sender = direction == PacketDirection.Incomming ? (ISocketSender)this._service : this._outgoing;
                 if (sender == null)
                 {
                     // disconnected or not connect yet.
@@ -132,9 +132,9 @@ namespace Communication
 
                 socket.BeginReceive(stateObject.Buffer, 0, StateObject.BUFFER_SIZE, SocketFlags.None, callback, stateObject);
             }
-            catch (ObjectDisposedException dex)
+            catch (ObjectDisposedException)
             {
-                Console.WriteLine("{0} Socket Closed! {1}", direction, stateObject.ClientId);
+                Console.WriteLine("{0} Socket Disposed! {1}", direction, stateObject.ClientId);
                 stateObject.Dispose();
                 Console.WriteLine();
             }
