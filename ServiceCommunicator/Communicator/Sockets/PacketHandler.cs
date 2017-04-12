@@ -97,7 +97,7 @@ namespace Communication.Sockets
 
                             var packetLength = this._readPosition - readStart;
                             var completedPacket = new byte[packetLength];
-                            Array.Copy(this._buffer, readStart, completedPacket, 0, packetLength);
+                            Buffer.BlockCopy(this._buffer, readStart, completedPacket, 0, packetLength);
 
                             needCompaction = true;
                             
@@ -144,7 +144,8 @@ namespace Communication.Sockets
 
         private void AddBuffer(byte[] packet, int readBytes)
         {
-            Array.Copy(packet, 0, this._buffer, this._lastPosition, readBytes);
+            Buffer.BlockCopy(packet, 0, this._buffer, this._lastPosition, readBytes);
+            //Array.Copy(packet, 0, this._buffer, this._lastPosition, readBytes);
             this._lastPosition += readBytes;
         }
 
@@ -165,7 +166,8 @@ namespace Communication.Sockets
             }
 
             // buffer compaction.
-            Array.Copy(this._buffer, readPosition, this._buffer, 0, remainSize);
+            //Array.Copy(this._buffer, readPosition, this._buffer, 0, remainSize);
+            Buffer.BlockCopy(this._buffer, readPosition, this._buffer, 0, remainSize);
         }
 
         public void Dispose()

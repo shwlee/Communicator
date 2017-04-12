@@ -49,7 +49,7 @@ namespace Communication
             this._outgoing.Connect(ip, port);
         }
 
-        public async Task<TResult> Send<TInterface, TResult>(Expression<Func<TInterface, TResult>> method, Guid clientId = default(Guid), PacketDirection direction = PacketDirection.Incomming)
+        public async Task<TResult> Send<TInterface, TResult>(Expression<Func<TInterface, TResult>> method, Guid clientId = default(Guid), PacketDirection direction = PacketDirection.Outgoing)
             where TInterface : class
             where TResult : class
         {
@@ -70,7 +70,7 @@ namespace Communication
 
                 // check sender
                 // if passed client id, send to service; not passed client id, service response or push to client.
-                var sender = direction == PacketDirection.Incomming ? (ISocketSender)this._service : this._outgoing;
+                var sender = direction == PacketDirection.Outgoing ? (ISocketSender)this._outgoing : this._service;
                 if (sender == null)
                 {
                     // disconnected or not connect yet.
