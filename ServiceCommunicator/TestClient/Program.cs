@@ -23,13 +23,27 @@ namespace TestClient
 
             Console.WriteLine("Connect to Service Start! IP : {0}, Port : {1}", ServiceIp, ServicePort);
 
-            Console.ReadLine();
-
-            for (int i = 0; i < 50; i++)
+            var isContinue = true;
+            while (isContinue)
             {
-                SendTest(communicator, clientId);
+                var input = Console.ReadLine();
+                switch (input)
+                {
+                    case "c": // test memory
+                        GC.Collect();
+                        break;
+                    case "":
+                        for (int i = 0; i < 50; i++)
+                        {
+                            SendTest(communicator, clientId);
 
-                _sendCount++;
+                            _sendCount++;
+                        }
+                        break;
+                    case "q":
+                        isContinue = false;
+                        break;
+                }
             }
 
             Console.ReadLine();

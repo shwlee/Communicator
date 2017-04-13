@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Common.Interfaces;
 using Communication.AsyncResponse;
 using Communication.Hydrations;
+using Communication.Packets;
 using Communication.Sockets;
 using Mediator;
 
@@ -127,10 +128,14 @@ namespace Communication
                     stateObject.PacketHandler.HandlePackets(stateObject.Buffer, read);
                 }
 
+                BufferPool.Instance.ReturnBuffer(stateObject.Buffer);
+
                 var callback = direction == PacketDirection.Incomming ? 
                     (AsyncCallback)ReceiveServiceCallback : ReceiveResponseCallback;
 
-                socket.BeginReceive(stateObject.Buffer, 0, StateObject.BUFFER_SIZE, SocketFlags.None, callback, stateObject);
+                stateObject.Buffer = BufferPool.Instance.GetBuffer();
+
+                socket.BeginReceive(stateObject.Buffer, 0, BufferPool.BUFFER_SIZE, SocketFlags.None, callback, stateObject);
             }
             catch (ObjectDisposedException)
             {

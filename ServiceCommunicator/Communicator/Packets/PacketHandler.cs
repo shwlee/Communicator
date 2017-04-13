@@ -4,9 +4,10 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using Communication.AsyncResponse;
+using Communication.Sockets;
 using Mediator;
 
-namespace Communication.Sockets
+namespace Communication.Packets
 {
     /// <summary>
     /// Packet tokenizing and response from received Packet.
@@ -17,7 +18,7 @@ namespace Communication.Sockets
 
         private InstanceMediator _mediator;
 
-        private byte[] _buffer = new byte[StateObject.BUFFER_SIZE * 10];
+        private byte[] _buffer = new byte[BufferPool.BUFFER_SIZE * 10];
 
         private int _readPosition;
 
@@ -73,6 +74,7 @@ namespace Communication.Sockets
 
                             if (this._lastPosition < this._readPosition + interfaceNameSize)
                             {
+                                this._readPosition = readStart;
                                 break;
                             }
                             var interfaceNameBytes = binaryReader.ReadBytes(interfaceNameSize);
@@ -81,6 +83,7 @@ namespace Communication.Sockets
 
                             if (this._lastPosition < this._readPosition + methodNameSize)
                             {
+                                this._readPosition = readStart;
                                 break;
                             }
                             var methodNameBytes = binaryReader.ReadBytes(methodNameSize);
@@ -90,6 +93,7 @@ namespace Communication.Sockets
                             var mediatorContext = this._mediator.GetMediatorContext(interfaceName, methodName);
                             if (this._lastPosition < this._readPosition + argSize)
                             {
+                                this._readPosition = readStart;
                                 break;
                             }
                             var argBytes = binaryReader.ReadBytes(argSize);
@@ -135,7 +139,7 @@ namespace Communication.Sockets
                     }
                 }
             }
-
+            
             if (needCompaction)
             {
                 this.CompactBuffer();
@@ -145,7 +149,6 @@ namespace Communication.Sockets
         private void AddBuffer(byte[] packet, int readBytes)
         {
             Buffer.BlockCopy(packet, 0, this._buffer, this._lastPosition, readBytes);
-            //Array.Copy(packet, 0, this._buffer, this._lastPosition, readBytes);
             this._lastPosition += readBytes;
         }
 
@@ -157,7 +160,7 @@ namespace Communication.Sockets
 
             this._readPosition = 0;
             this._lastPosition = remainSize;
-
+            
             // read completed all packets.
             if (remainSize == 0)
             {
@@ -166,7 +169,6 @@ namespace Communication.Sockets
             }
 
             // buffer compaction.
-            //Array.Copy(this._buffer, readPosition, this._buffer, 0, remainSize);
             Buffer.BlockCopy(this._buffer, readPosition, this._buffer, 0, remainSize);
         }
 
@@ -175,6 +177,8 @@ namespace Communication.Sockets
             Array.Clear(this._buffer, 0, this._lastPosition);
             this._readPosition = 0;
             this._lastPosition = 0;
+
+            this._buffer = null;
 
             // don't dispose, just null;
             this._responseSocket = null;

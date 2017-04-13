@@ -1,5 +1,5 @@
 ﻿
-namespace Communication.Sockets
+namespace Communication.Packets
 {
     public enum PacketDirection
     {

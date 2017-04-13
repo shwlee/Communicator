@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Sockets;
+using Communication.Packets;
 
 namespace Communication.Sockets
 {
@@ -8,10 +9,8 @@ namespace Communication.Sockets
         internal Guid ClientId { get; set; }
 
         internal Socket WorkSocket { get; set; }
-
-        internal const int BUFFER_SIZE = 2048;
-
-        internal byte[] Buffer = new byte[BUFFER_SIZE];
+        
+        internal byte[] Buffer { get; set; }
 
         internal PacketHandler PacketHandler { get; set; }
 
@@ -28,6 +27,11 @@ namespace Communication.Sockets
             if (this.PacketHandler != null)
             {
                 this.PacketHandler.Dispose();
+            }
+
+            if (this.Buffer != null)
+            {
+                BufferPool.Instance.ReturnBuffer(this.Buffer);
             }
 
             this.Buffer = null;

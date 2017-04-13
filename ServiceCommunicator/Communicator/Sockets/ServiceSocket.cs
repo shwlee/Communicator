@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Common.Interfaces;
+using Communication.Packets;
 
 namespace Communication.Sockets
 {
@@ -63,7 +64,13 @@ namespace Communication.Sockets
                     this._connectedClients.Remove(alreadyConnected);
                 }
 
-                var state = new StateObject { ClientId = Guid.NewGuid(), WorkSocket = clientSocket };
+                var state = new StateObject
+                {
+                    ClientId = Guid.NewGuid(), 
+                    WorkSocket = clientSocket,
+                    Buffer = BufferPool.Instance.GetBuffer()
+                };
+
                 this._connectedClients.Add(state);
 
                 Task.Factory.StartNew(() =>
@@ -73,7 +80,7 @@ namespace Communication.Sockets
                     
                     Console.WriteLine("[Connect client] {0}", state.ClientId);
 
-                    clientSocket.BeginReceive(state.Buffer, 0, StateObject.BUFFER_SIZE, SocketFlags.None, Communicator.ReceiveServiceCallback, state);
+                    clientSocket.BeginReceive(state.Buffer, 0, BufferPool.BUFFER_SIZE, SocketFlags.None, Communicator.ReceiveServiceCallback, state);
                 }, TaskCreationOptions.LongRunning);
 
                 serviceSocket.BeginAccept(this.OnAccept, serviceSocket);
