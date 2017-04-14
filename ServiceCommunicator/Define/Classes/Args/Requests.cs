@@ -13,4 +13,9 @@ namespace Define.Classes.Args
 	{
 	    public bool Status;
 	}
+
+    [ProtoContract]
+    public class Ping : Request
+    {
+    }
 }

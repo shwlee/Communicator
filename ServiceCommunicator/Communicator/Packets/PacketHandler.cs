@@ -3,6 +3,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Common.Communication;
 using Communication.AsyncResponse;
 using Communication.Sockets;
 using Mediator;
@@ -18,7 +19,7 @@ namespace Communication.Packets
 
         private InstanceMediator _mediator;
 
-        private byte[] _buffer = new byte[BufferPool.BUFFER_SIZE * 10];
+        private byte[] _buffer = new byte[BufferPool.Buffer1024Size * 10];
 
         private int _readPosition;
 
@@ -37,9 +38,10 @@ namespace Communication.Packets
             this.AddBuffer(packet, readBytes);
 
             // larger than packet header size. 
+            // sizeheader : whole size (4) + remain buffer size (4),
             // preamble : request hash (4),
             // header : interface name size (4) + method name size (4) + arg size (4),
-            if (this._lastPosition < 16)
+            if (this._lastPosition < 24)
             {
                 // continue read packets from socket.
                 return;
@@ -56,6 +58,20 @@ namespace Communication.Packets
                         try
                         {
                             var readStart = this._readPosition;
+                            var wholeSizeBytes = binaryReader.ReadBytes(4);
+                            var wholeSize = BitConverter.ToInt32(wholeSizeBytes, 0);
+                            this._readPosition += 4;
+
+                            var remainSizeBytes = binaryReader.ReadBytes(4);
+                            var remainSize = BitConverter.ToInt32(remainSizeBytes, 0);
+                            this._readPosition += 4;
+
+                            if (wholeSize > this._lastPosition)
+                            {
+                                this._readPosition = readStart;
+                                break;
+                            }
+                            
                             var preambleBytes = binaryReader.ReadBytes(4);
                             var preamble = BitConverter.ToInt32(preambleBytes, 0);
                             this._readPosition += 4;
@@ -72,39 +88,27 @@ namespace Communication.Packets
                             var argSize = BitConverter.ToInt32(argSizeBytes, 0);
                             this._readPosition += 4;
 
-                            if (this._lastPosition < this._readPosition + interfaceNameSize)
-                            {
-                                this._readPosition = readStart;
-                                break;
-                            }
                             var interfaceNameBytes = binaryReader.ReadBytes(interfaceNameSize);
                             var interfaceName = Encoding.UTF8.GetString(interfaceNameBytes);
                             this._readPosition += interfaceNameBytes.Length;
 
-                            if (this._lastPosition < this._readPosition + methodNameSize)
-                            {
-                                this._readPosition = readStart;
-                                break;
-                            }
                             var methodNameBytes = binaryReader.ReadBytes(methodNameSize);
                             var methodName = Encoding.UTF8.GetString(methodNameBytes);
                             this._readPosition += methodNameBytes.Length;
 
                             var mediatorContext = this._mediator.GetMediatorContext(interfaceName, methodName);
-                            if (this._lastPosition < this._readPosition + argSize)
-                            {
-                                this._readPosition = readStart;
-                                break;
-                            }
+                           
                             var argBytes = binaryReader.ReadBytes(argSize);
                             this._readPosition += argSize;
+                            
+                            var completedPacket = new byte[wholeSize];
+                            Buffer.BlockCopy(this._buffer, readStart, completedPacket, 0, wholeSize);
 
-                            var packetLength = this._readPosition - readStart;
-                            var completedPacket = new byte[packetLength];
-                            Buffer.BlockCopy(this._buffer, readStart, completedPacket, 0, packetLength);
+                            binaryReader.ReadBytes(remainSize);
+                            this._readPosition += remainSize;
 
                             needCompaction = true;
-                            
+
                             Task.Run(async () =>
                             {
                                 var tcs = new TaskCompletionSource<bool>();
@@ -129,6 +133,8 @@ namespace Communication.Packets
 
                                     var responsePacket = PacketGenerator.GeneratePacket(string.Empty, string.Empty, result, preamble);
                                     await this._responseSocket.SendPacketAsync(responsePacket);
+
+                                    BufferPool.Instance.ReturnBuffer(responsePacket);
                                 }
                             });
                         }

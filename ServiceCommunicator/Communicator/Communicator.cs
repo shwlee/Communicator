@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Common.Communication;
 using Common.Interfaces;
 using Communication.AsyncResponse;
 using Communication.Hydrations;
@@ -79,6 +80,8 @@ namespace Communication
                 }
 
                 var sendPacketLength = await sender.Send(sendBytes, clientId);
+                BufferPool.Instance.ReturnBuffer(sendBytes);
+
                 if (sendPacketLength == 0)
                 {
                     // disconnected.
@@ -130,12 +133,14 @@ namespace Communication
 
                 BufferPool.Instance.ReturnBuffer(stateObject.Buffer);
 
+                stateObject.Buffer = null;
+
                 var callback = direction == PacketDirection.Incomming ? 
                     (AsyncCallback)ReceiveServiceCallback : ReceiveResponseCallback;
 
-                stateObject.Buffer = BufferPool.Instance.GetBuffer();
+                stateObject.Buffer = BufferPool.Instance.GetBuffer(BufferPool.Buffer1024Size);
 
-                socket.BeginReceive(stateObject.Buffer, 0, BufferPool.BUFFER_SIZE, SocketFlags.None, callback, stateObject);
+                socket.BeginReceive(stateObject.Buffer, 0, BufferPool.Buffer1024Size, SocketFlags.None, callback, stateObject);
             }
             catch (ObjectDisposedException)
             {

@@ -48,7 +48,6 @@
     <Compile Include="AsyncResponse\ResponseAwaits.cs" />
     <Compile Include="Hydrations\HydrateExpression.cs" />
     <Compile Include="Hydrations\ProtocolHash.cs" />
-    <Compile Include="Packets\BufferPool.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Communicator.cs" />
     <Compile Include="Sockets\OutgoingSocket.cs" />

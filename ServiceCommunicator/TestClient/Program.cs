@@ -16,8 +16,11 @@ namespace TestClient
         {
             Console.WriteLine("Ready to Start!");
 
+            Console.Write("Server IP : ");
+            var ipInput = Console.ReadLine();
+
             var communicator = new Communicator();
-            communicator.ConnectToService(ServiceIp, ServicePort);
+            communicator.ConnectToService(ipInput, ServicePort);
 
             var clientId = communicator.ClientId;
 

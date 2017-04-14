@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Common.Communication;
 using Common.Interfaces;
 using Communication.Packets;
 
@@ -23,7 +24,7 @@ namespace Communication.Sockets
             var state = new StateObject
             {
                 WorkSocket = this._socket,
-                Buffer = BufferPool.Instance.GetBuffer()
+                Buffer = BufferPool.Instance.GetBuffer(BufferPool.Buffer1024Size)
             };
             this.StartReceive(state);
         }
@@ -46,7 +47,7 @@ namespace Communication.Sockets
                 this.ClientId = new Guid(readBuffer);
                 state.ClientId = this.ClientId;
 
-                serviceSocket.BeginReceive(state.Buffer, 0, BufferPool.BUFFER_SIZE, SocketFlags.None, Communicator.ReceiveResponseCallback, state);
+                serviceSocket.BeginReceive(state.Buffer, 0, BufferPool.Buffer1024Size, SocketFlags.None, Communicator.ReceiveResponseCallback, state);
             }
             catch (Exception ex)
             {

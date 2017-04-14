@@ -7,6 +7,7 @@ namespace Mediator
 {
 	public class PacketGenerator
 	{
+        // sizeheader : whole packet size (4) + remain buffer size (4),
 		// preamble : request hash (4),
 		// header : interface name size (4) + method name size (4) + arg size (4),
 		// body : interface name + method name + serialized arg.
@@ -28,9 +29,22 @@ namespace Mediator
 			var methodNameBytesSize = BitConverter.GetBytes(methodNameBytes.Length);
 			var argBytesSize = BitConverter.GetBytes(argBytes.Length);
 
-            var packet = new byte[16 + interfaceNameBytes.Length + methodNameBytes.Length + argBytes.Length];
-		    var position = 0;
-            Buffer.BlockCopy(preamble, 0, packet, 0, 4); // Preamble.
+		    var wholeSize = 24 + interfaceNameBytes.Length + methodNameBytes.Length + argBytes.Length;
+            var wholeSizeBytes = BitConverter.GetBytes(wholeSize);
+
+            var packet = BufferPool.Instance.GetBuffer(wholeSize);
+
+		    var remainSize = packet.Length - wholeSize;
+            var remainSizeBytes = BitConverter.GetBytes(remainSize);
+		    
+            var position = 0;
+            Buffer.BlockCopy(wholeSizeBytes, 0, packet, 0, 4); // whole size.
+            position += wholeSizeBytes.Length;
+
+            Buffer.BlockCopy(remainSizeBytes, 0, packet, position, 4); // remain buffer size.
+            position += remainSizeBytes.Length;
+
+            Buffer.BlockCopy(preamble, 0, packet, position, 4); // Preamble.
 		    position += preamble.Length;
             
             Buffer.BlockCopy(interfaceNameBytesSize, 0, packet, position, 4); // Header interface name length.

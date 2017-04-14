@@ -70,8 +70,8 @@ namespace Mediator
 			{
 				using (var binaryReader = new BinaryReader(memoryStream))
 				{
-                    // jump preamble
-                    binaryReader.ReadBytes(4);
+                    // jump size header and preamble
+                    binaryReader.ReadBytes(12);
 
 					var interfaceNameSizeBytes = binaryReader.ReadBytes(4);
 					var interfaceNameSize = BitConverter.ToInt32(interfaceNameSizeBytes, 0);

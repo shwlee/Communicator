@@ -24,7 +24,7 @@ namespace Communication.AsyncResponse
         public static bool MatchResponse(byte[] packet)
         {
             var checkPacket = new byte[4];
-            Array.Copy(packet, checkPacket, 4);
+            Buffer.BlockCopy(packet, 8, checkPacket, 0, 4); // jump size header and fill preamble to checkPacket.
             var preamble = BitConverter.ToInt32(checkPacket, 0);
 
             if (_reponseCollection.ContainsKey(preamble) == false)
