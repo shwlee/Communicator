@@ -19,7 +19,7 @@ namespace Common.Communication
         public const int Buffer512Size = 512;
         public const int Buffer1024Size = 1024;
         public const int Buffer2048Size = 2048;
-        public const int Buffer4096Size = 2048;
+        public const int Buffer4096Size = 4096;
         public const int Buffer1MSize = 1048576;
 
         private static readonly Lazy<BufferPool> _singletonInstance = new Lazy<BufferPool>(() => new BufferPool());

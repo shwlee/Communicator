@@ -9,7 +9,7 @@ namespace TestClient
     class Program
     {
         const int ServicePort = 8009;
-        const string ServiceIp = "172.16.10.70";
+        //const string ServiceIp = "172.16.10.70";
         //const string ServiceIp = "localhost";
 
         static void Main(string[] args)
@@ -24,7 +24,7 @@ namespace TestClient
 
             var clientId = communicator.ClientId;
 
-            Console.WriteLine("Connect to Service Start! IP : {0}, Port : {1}", ServiceIp, ServicePort);
+            Console.WriteLine("Connect to Service Start! IP : {0}, Port : {1}", ipInput, ServicePort);
 
             var isContinue = true;
             while (isContinue)
