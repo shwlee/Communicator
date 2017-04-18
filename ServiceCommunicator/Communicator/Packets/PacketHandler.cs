@@ -131,6 +131,14 @@ namespace Communication.Packets
                                     var arg = ProtoBuf.Serializer.NonGeneric.Deserialize(mediatorContext.ArgumentType, argStream);
                                     var result = mediatorContext.Execute.DynamicInvoke(arg);
 
+                                    // call awaitable method.
+                                    if (result is Task)
+                                    {
+                                        var asyncReponse = result as Task;
+                                        await asyncReponse;
+                                        result = TaskResultCache.GetTaskResult(asyncReponse); // remove Task, gets and send only result
+                                    }
+
                                     var responsePacket = PacketGenerator.GeneratePacket(string.Empty, string.Empty, result, preamble);
                                     await this._responseSocket.SendPacketAsync(responsePacket);
 

@@ -61,22 +61,30 @@ namespace TestClient
         private static async Task SendTest(Communicator com, Guid clientId)
         {
             var hash = _sendCount;
-            var request = new SetServiceStatusRequest
+            //var request = new SetServiceStatusRequest
+            //{
+            //    ClientHash = hash,
+            //    Status = true
+            //};
+
+            //Console.WriteLine("[Start Send] Hash : {0}", hash);
+
+            //var response = await com.Send((IServiceStatus service) => service.SetServiceStatus(request), clientId);
+            //if (response == null)
+            //{
+            //    Console.WriteLine("[Response is null] Hash : {0}", hash);
+            //    return;
+            //}
+
+            var response = await com.Send((IServiceStatus svc) => svc.KeepAlive(new Ping
             {
-                ClientHash = hash,
-                Status = true
-            };
+                ClientHash = hash, 
+                SendTimeStamp = DateTime.UtcNow
+            }), clientId);
+            var result = await response;
+            Console.WriteLine("Received Response. IsSuccess : {0}, ClientHash : {1}", result.IsSuccess, result.ReceivedTimeStamp);
 
-            Console.WriteLine("[Start Send] Hash : {0}", hash);
-
-            var response = await com.Send((IServiceStatus service) => service.SetServiceStatus(request), clientId);
-            if (response == null)
-            {
-                Console.WriteLine("[Response is null] Hash : {0}", hash);
-                return;
-            }
-
-            Console.WriteLine("Received Response. IsSuccess : {0}, ClientHash : {1}", response.IsSuccess, response.ClientHash);
+            //Console.WriteLine("Received Response. IsSuccess : {0}, ClientHash : {1}", response.IsSuccess, response.ClientHash);
         }
     }
 }

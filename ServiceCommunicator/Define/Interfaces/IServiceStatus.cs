@@ -1,4 +1,5 @@
-﻿using Define.Classes.Args;
+﻿using System.Threading.Tasks;
+using Define.Classes.Args;
 using Define.Classes.BaseArgs;
 
 namespace Define.Interfaces
@@ -8,5 +9,7 @@ namespace Define.Interfaces
 		GetServiceStatusResponse GetServiceStatus(GetServiceStatusRequest request);
 
 		SetServiceStatusResponse SetServiceStatus(SetServiceStatusRequest request);
+
+	    Task<Pong> KeepAlive(Ping request);
 	}
 }

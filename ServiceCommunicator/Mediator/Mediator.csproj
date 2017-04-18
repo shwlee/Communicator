@@ -49,6 +49,7 @@
     <Compile Include="MediatorContext.cs" />
     <Compile Include="PacketGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TaskResultCache.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

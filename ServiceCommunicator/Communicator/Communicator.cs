@@ -90,6 +90,15 @@ namespace Communication
 
                 // await receive response.
                 var response = await tcs.Task;
+                
+                // response for call awaitable method.
+                if (typeof(Task).IsAssignableFrom(typeof(TResult)))
+                {
+                    var resultType = TaskResultCache.GetTaskResultType(typeof(TResult));
+                    dynamic responseArg = _mediator.ParseArgument(response, resultType);
+                    var taskResponse = Task.FromResult(responseArg);
+                    return taskResponse as TResult;
+                }
 
                 return _mediator.ParseArgument<TResult>(response);
             });

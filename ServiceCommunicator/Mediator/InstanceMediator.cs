@@ -98,6 +98,40 @@ namespace Mediator
 			}
 		}
 
+	    public object ParseArgument(byte[] packet, Type targetType)
+	    {
+            using (var memoryStream = new MemoryStream(packet))
+            {
+                using (var binaryReader = new BinaryReader(memoryStream))
+                {
+                    // jump size header and preamble
+                    binaryReader.ReadBytes(12);
+
+                    var interfaceNameSizeBytes = binaryReader.ReadBytes(4);
+                    var interfaceNameSize = BitConverter.ToInt32(interfaceNameSizeBytes, 0);
+
+                    var methodNameSizeBytes = binaryReader.ReadBytes(4);
+                    var methodNameSize = BitConverter.ToInt32(methodNameSizeBytes, 0);
+
+                    var argSizeBytes = binaryReader.ReadBytes(4);
+                    var argSize = BitConverter.ToInt32(argSizeBytes, 0);
+
+                    // jump interface name
+                    binaryReader.ReadBytes(interfaceNameSize);
+
+                    // jump method name
+                    binaryReader.ReadBytes(methodNameSize);
+
+                    var argBytes = binaryReader.ReadBytes(argSize);
+                    using (var argStream = new MemoryStream(argBytes))
+                    {
+                        var arg = ProtoBuf.Serializer.NonGeneric.Deserialize(targetType, argStream);
+                        return arg;
+                    }
+                }
+            }
+	    }
+
 		public byte[] Execute(byte[] packet)
 		{
 			using (var memoryStream = new MemoryStream(packet))

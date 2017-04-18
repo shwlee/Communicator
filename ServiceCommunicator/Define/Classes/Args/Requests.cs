@@ -1,4 +1,5 @@
-﻿using Define.Classes.BaseArgs;
+﻿using System;
+using Define.Classes.BaseArgs;
 using ProtoBuf;
 
 namespace Define.Classes.Args
@@ -14,8 +15,9 @@ namespace Define.Classes.Args
 	    public bool Status;
 	}
 
-    [ProtoContract]
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     public class Ping : Request
     {
+        public DateTime SendTimeStamp;
     }
 }
