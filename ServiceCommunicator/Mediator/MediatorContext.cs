@@ -6,7 +6,7 @@ namespace Mediator
 	{
 		public Type InterfaceType { get; set; }
 
-		public string InterfaceName { get { return this.InterfaceType.Name; } }
+		public string InterfaceName => this.InterfaceType.Name;
 
 		public string Method { get; set; }
 

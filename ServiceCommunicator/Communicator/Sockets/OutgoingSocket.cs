@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Common.Communication;
 using Common.Interfaces;
 using Communication.Packets;
+using Mediator;
 
 namespace Communication.Sockets
 {
@@ -24,8 +25,8 @@ namespace Communication.Sockets
             var state = new StateObject
             {
                 WorkSocket = this._socket,
-                Buffer = BufferPool.Instance.GetBuffer(BufferPool.Buffer1024Size)
-            };
+				Buffer = BufferPool.Instance.GetBuffer(BufferPool.Buffer1024Size)
+			};
             this.StartReceive(state);
         }
 
@@ -56,7 +57,7 @@ namespace Communication.Sockets
             }
         }
 
-        public async Task<int> Send(byte[] packet, Guid clientId = default(Guid))
+        public async Task<int> SendAsync(byte[] packet, Guid clientId = default(Guid))
         {
             if (clientId == default(Guid))
             {
@@ -67,7 +68,18 @@ namespace Communication.Sockets
             return await this._socket.SendPacketAsync(packet);
         }
 
-        public void Dispose()
+	    public int Send(byte[] packet, Guid clientId = new Guid())
+	    {
+			if (clientId == default(Guid))
+			{
+				// TODO : not connected. need logging.
+				return 0;
+			}
+
+		    return this._socket.Send(packet, 0, packet.Length, SocketFlags.None);
+	    }
+
+	    public void Dispose()
         {
             if (this._socket == null)
             {

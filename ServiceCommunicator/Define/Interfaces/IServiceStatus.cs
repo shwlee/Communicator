@@ -8,5 +8,7 @@ namespace Define.Interfaces
 		GetServiceStatusResponse GetServiceStatus(GetServiceStatusRequest request);
 
 		SetServiceStatusResponse SetServiceStatus(SetServiceStatusRequest request);
+
+	    Pong KeepAlive(Ping request);
 	}
 }

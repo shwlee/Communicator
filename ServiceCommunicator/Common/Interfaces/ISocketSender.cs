@@ -5,6 +5,8 @@ namespace Common.Interfaces
 {
 	public interface ISocketSender
 	{
-		Task<int> Send(byte[] packet, Guid clientId = default(Guid));
+		Task<int> SendAsync(byte[] packet, Guid clientId = default(Guid));
+
+		int Send(byte[] packet, Guid clientId = default(Guid));
 	}
 }

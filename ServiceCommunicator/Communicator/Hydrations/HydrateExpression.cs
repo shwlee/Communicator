@@ -6,20 +6,20 @@ namespace Communication.Hydrations
 {
 	public class HydrateExpression
 	{
-		public static Packet Get<TInterface, TResult>(Expression<Func<TInterface, TResult>> method)
+		public static Message Get<TInterface, TResult>(Expression<Func<TInterface, TResult>> method)
 			where TInterface : class
 			where TResult : class
 		{
 			return Hydrate(method);
 		}
 
-		public static Packet Get<TInterface>(Expression<Action<TInterface>> method)
+		public static Message Get<TInterface>(Expression<Action<TInterface>> method)
 			where TInterface : class
 		{
 			return Hydrate(method);
 		}
 
-		private static Packet Hydrate<T>(Expression<T> method)
+		private static Message Hydrate<T>(Expression<T> method)
 		{
 			if (method.Body.NodeType != ExpressionType.Call)
 			{
@@ -46,7 +46,7 @@ namespace Communication.Hydrations
 				argObject = compiledArgObjectExpression();				
 			}
 
-			return new Packet { MethodName = methodName, InterfaceName = interfaceName, Argument = argObject };
+			return new Message { MethodName = methodName, InterfaceName = interfaceName, Argument = argObject };
 		}
 	}
 }

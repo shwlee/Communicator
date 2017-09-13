@@ -1,16 +1,17 @@
-﻿using System;
+﻿using Common.Communication;
+using Common.Interfaces;
+using Mediator;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using Common.Communication;
-using Common.Interfaces;
 using Communication.Packets;
 
 namespace Communication.Sockets
 {
-    public class ServiceSocket : ISocketSender
+	public class ServiceSocket : ISocketSender
     {
         private List<StateObject> _connectedClients = new List<StateObject>();
         private Socket _socket;
@@ -69,11 +70,12 @@ namespace Communication.Sockets
                 {
                     ClientId = Guid.NewGuid(), 
                     WorkSocket = clientSocket,
-                    Buffer = BufferPool.Instance.GetBuffer(BufferPool.Buffer1024Size)
-                };
+					Buffer = BufferPool.Instance.GetBuffer(BufferPool.Buffer1024Size)
+				};
 
                 this._connectedClients.Add(state);
 
+				// TODO : Move to Server logic
                 Task.Factory.StartNew(() =>
                 {
                     var clientIdPacket = state.ClientId.ToByteArray();
@@ -106,7 +108,7 @@ namespace Communication.Sockets
             }
         }
 
-        public async Task<int> Send(byte[] packet, Guid clientId = default(Guid))
+        public async Task<int> SendAsync(byte[] packet, Guid clientId = default(Guid))
         {
             var connectedClient = this._connectedClients.FirstOrDefault(s => s.ClientId.Equals(clientId));
             if (connectedClient == null)
@@ -119,7 +121,20 @@ namespace Communication.Sockets
             return await clientSocket.SendPacketAsync(packet);
         }
 
-        public void StopService()
+	    public int Send(byte[] packet, Guid clientId = default(Guid))
+	    {
+			var connectedClient = this._connectedClients.FirstOrDefault(s => s.ClientId.Equals(clientId));
+			if (connectedClient == null)
+			{
+				// TODO : need logging.
+				return 0;
+			}
+
+			var clientSocket = connectedClient.WorkSocket;
+			return clientSocket.Send(packet, 0, packet.Length, SocketFlags.None);
+		}
+
+	    public void StopService()
         {
             if (this._socket == null)
             {

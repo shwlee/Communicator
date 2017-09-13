@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Communication.Packets;
 
 namespace Communication.AsyncResponse
 {
     public class ResponseAwaits
     {
-        private static Dictionary<int, TaskCompletionSource<byte[]>> _reponseCollection = new Dictionary<int, TaskCompletionSource<byte[]>>();
-
+        private static readonly Dictionary<int, TaskCompletionSource<byte[]>> _responseCollection = new Dictionary<int, TaskCompletionSource<byte[]>>();
+		
         [MethodImpl(MethodImplOptions.Synchronized)]
         public static void Insert(int hash, TaskCompletionSource<byte[]> tcs)
         {
-            _reponseCollection.Add(hash, tcs);
+            _responseCollection.Add(hash, tcs);
         }
 
         /// <summary>
@@ -23,39 +24,37 @@ namespace Communication.AsyncResponse
         [MethodImpl(MethodImplOptions.Synchronized)]
         public static bool MatchResponse(byte[] packet)
         {
-            var checkPacket = new byte[4];
-            Buffer.BlockCopy(packet, 8, checkPacket, 0, 4); // jump size header and fill preamble to checkPacket.
-            var preamble = BitConverter.ToInt32(checkPacket, 0);
+	        var preamble = PacketGenerator.GetPreamble(packet);
 
-            if (_reponseCollection.ContainsKey(preamble) == false)
+            if (_responseCollection.ContainsKey(preamble) == false)
             {
                 // it's receive service call.				
                 return true;
             }
 
-            var tcs = _reponseCollection[preamble];
+            var tcs = _responseCollection[preamble];
 
             // remove to handled response.
-            _reponseCollection.Remove(preamble);
+            _responseCollection.Remove(preamble);
 
             tcs.SetResult(packet);
 
             return false;
         }
 
-        [MethodImpl(MethodImplOptions.Synchronized)]
+		[MethodImpl(MethodImplOptions.Synchronized)]
         public static TaskCompletionSource<byte[]> GetResponseSource(int hash)
         {
-            if (_reponseCollection.ContainsKey(hash) == false)
+            if (_responseCollection.ContainsKey(hash) == false)
             {
                 // it's receive service call.				
                 return null;
             }
 
-            var tcs = _reponseCollection[hash];
+            var tcs = _responseCollection[hash];
 
             // remove to handled response.
-            _reponseCollection.Remove(hash);
+            _responseCollection.Remove(hash);
 
             return tcs;
         }

@@ -47,7 +47,6 @@
   <ItemGroup>
     <Compile Include="InstanceMediator.cs" />
     <Compile Include="MediatorContext.cs" />
-    <Compile Include="PacketGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,6 +1,8 @@
 ﻿using System;
 using Communication;
 using Define.Classes;
+using Define.Classes.Args;
+using Define.Interfaces;
 
 namespace TestServer
 {
@@ -24,7 +26,8 @@ namespace TestServer
                 switch (input)
                 {
                     case "c": // test memory
-                        GC.Collect();
+		                SendTest(communicator);
+						GC.Collect();
                         break;
                     case "":
                     case "q":
@@ -36,5 +39,11 @@ namespace TestServer
             communicator.Dispose();
             Console.ReadLine();
         }
+
+	    static async void SendTest(Communicator com)
+	    {
+			var result = await com.SendAsync((IServiceStatus s) => s.KeepAlive(new Ping { SendTimeStamp = DateTime.UtcNow }));
+		    Console.WriteLine(result);
+		}
     }
 }

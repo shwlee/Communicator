@@ -12,7 +12,7 @@ namespace Communication.Sockets
 		    {
                 Console.WriteLine("[Call SendTaskAsync] Packet Length : {0}", packet.Length);
                 AsyncCallback nullOp = i => { };
-                return await Task.Factory.FromAsync<int>(
+                return await Task.Factory.FromAsync(
                     // ReSharper disable once AssignNullToNotNullAttribute
                         socket.BeginSend(packet, 0, packet.Length, SocketFlags.None, nullOp, socket),
                         socket.EndSend);

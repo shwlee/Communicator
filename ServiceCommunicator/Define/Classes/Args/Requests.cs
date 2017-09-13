@@ -1,4 +1,5 @@
-﻿using Define.Classes.BaseArgs;
+﻿using System;
+using Define.Classes.BaseArgs;
 using ProtoBuf;
 
 namespace Define.Classes.Args
@@ -11,11 +12,12 @@ namespace Define.Classes.Args
 	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
 	public class SetServiceStatusRequest : Request
 	{
-	    public bool Status;
+		public bool Status;
 	}
 
-    [ProtoContract]
-    public class Ping : Request
-    {
-    }
+	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+	public class Ping : Request
+	{
+		public DateTime SendTimeStamp;
+	}
 }

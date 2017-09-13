@@ -1,19 +1,15 @@
-﻿using System;
-using System.IO;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
-using Common.Communication;
-using Communication.AsyncResponse;
-using Communication.Sockets;
+﻿using Common.Communication;
 using Mediator;
+using System;
+using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 
 namespace Communication.Packets
 {
-    /// <summary>
-    /// Packet tokenizing and response from received Packet.
-    /// </summary>
-    class PacketHandler
+	/// <summary>
+	/// Packet tokenizing and response from received Packet.
+	/// </summary>
+	class PacketHandler
     {
         private Socket _responseSocket;
 
@@ -21,7 +17,9 @@ namespace Communication.Packets
 
         private byte[] _buffer = new byte[BufferPool.Buffer1024Size * 10];
 
-        private int _readPosition;
+		private readonly byte[] _headerBuffer = new byte[PacketGenerator.HeaderUnitSize];
+
+		private int _readPosition;
 
         private int _lastPosition;
 
@@ -31,17 +29,15 @@ namespace Communication.Packets
             this._mediator = mediator;
         }
 
+		[MethodImpl(MethodImplOptions.Synchronized)]
         public void HandlePackets(byte[] packet, int readBytes)
         {
             this._readPosition = 0;
-
+			
             this.AddBuffer(packet, readBytes);
 
-            // larger than packet header size. 
-            // sizeheader : whole size (4) + remain buffer size (4),
-            // preamble : request hash (4),
-            // header : interface name size (4) + method name size (4) + arg size (4),
-            if (this._lastPosition < 24)
+            // the last position has to larger than packet header size.
+            if (this._lastPosition < PacketGenerator.HeaderSize)
             {
                 // continue read packets from socket.
                 return;
@@ -49,110 +45,41 @@ namespace Communication.Packets
 
             var needCompaction = false;
 
-            using (var bufferStream = new MemoryStream(this._buffer))
-            {
-                using (var binaryReader = new BinaryReader(bufferStream))
-                {
-                    while (this._readPosition != this._lastPosition)
-                    {
-                        try
-                        {
-                            var readStart = this._readPosition;
-                            var wholeSizeBytes = binaryReader.ReadBytes(4);
-                            var wholeSize = BitConverter.ToInt32(wholeSizeBytes, 0);
-                            this._readPosition += 4;
+			while (this._readPosition < this._lastPosition)
+			{
+				try
+				{
+					Array.Clear(this._headerBuffer, 0, PacketGenerator.HeaderUnitSize);
+					var needMorePacket = PacketGenerator.ParseAndExecute(
+						ref this._readPosition, 
+						this._buffer, 
+						this._lastPosition, 
+						this._headerBuffer,
+						this._mediator, 
+						this._responseSocket);
 
-                            var remainSizeBytes = binaryReader.ReadBytes(4);
-                            var remainSize = BitConverter.ToInt32(remainSizeBytes, 0);
-                            this._readPosition += 4;
+					if (needMorePacket)
+					{
+						break;
+					}
 
-                            if (wholeSize > this._lastPosition)
-                            {
-                                this._readPosition = readStart;
-                                break;
-                            }
-                            
-                            var preambleBytes = binaryReader.ReadBytes(4);
-                            var preamble = BitConverter.ToInt32(preambleBytes, 0);
-                            this._readPosition += 4;
+					needCompaction = true;
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine(ex);
+					Array.Clear(this._buffer, 0, this._buffer.Length);
+					throw;
+				}
+			}
 
-                            var interfaceNameSizeBytes = binaryReader.ReadBytes(4);
-                            var interfaceNameSize = BitConverter.ToInt32(interfaceNameSizeBytes, 0);
-                            this._readPosition += 4;
-
-                            var methodNameSizeBytes = binaryReader.ReadBytes(4);
-                            var methodNameSize = BitConverter.ToInt32(methodNameSizeBytes, 0);
-                            this._readPosition += 4;
-
-                            var argSizeBytes = binaryReader.ReadBytes(4);
-                            var argSize = BitConverter.ToInt32(argSizeBytes, 0);
-                            this._readPosition += 4;
-
-                            var interfaceNameBytes = binaryReader.ReadBytes(interfaceNameSize);
-                            var interfaceName = Encoding.UTF8.GetString(interfaceNameBytes);
-                            this._readPosition += interfaceNameBytes.Length;
-
-                            var methodNameBytes = binaryReader.ReadBytes(methodNameSize);
-                            var methodName = Encoding.UTF8.GetString(methodNameBytes);
-                            this._readPosition += methodNameBytes.Length;
-
-                            var mediatorContext = this._mediator.GetMediatorContext(interfaceName, methodName);
-                           
-                            var argBytes = binaryReader.ReadBytes(argSize);
-                            this._readPosition += argSize;
-                            
-                            var completedPacket = new byte[wholeSize];
-                            Buffer.BlockCopy(this._buffer, readStart, completedPacket, 0, wholeSize);
-
-                            binaryReader.ReadBytes(remainSize);
-                            this._readPosition += remainSize;
-
-                            needCompaction = true;
-
-                            Task.Run(async () =>
-                            {
-                                var tcs = new TaskCompletionSource<bool>();
-                                tcs.SetResult(ResponseAwaits.MatchResponse(completedPacket));
-
-                                var isServiceCall = await tcs.Task;
-
-                                if (isServiceCall == false)
-                                {
-                                    return;
-                                }
-
-                                if (mediatorContext == null)
-                                {
-                                    throw new NullReferenceException("Method is not registered. Method name : " + methodName);
-                                }
-
-                                using (var argStream = new MemoryStream(argBytes))
-                                {
-                                    var arg = ProtoBuf.Serializer.NonGeneric.Deserialize(mediatorContext.ArgumentType, argStream);
-                                    var result = mediatorContext.Execute.DynamicInvoke(arg);
-
-                                    var responsePacket = PacketGenerator.GeneratePacket(string.Empty, string.Empty, result, preamble);
-                                    await this._responseSocket.SendPacketAsync(responsePacket);
-
-                                    BufferPool.Instance.ReturnBuffer(responsePacket);
-                                }
-                            });
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine(ex);
-                        }
-                    }
-                }
-            }
-            
-            if (needCompaction)
+			if (needCompaction)
             {
                 this.CompactBuffer();
             }
         }
-
-        private void AddBuffer(byte[] packet, int readBytes)
+		
+		private void AddBuffer(byte[] packet, int readBytes)
         {
             Buffer.BlockCopy(packet, 0, this._buffer, this._lastPosition, readBytes);
             this._lastPosition += readBytes;
@@ -177,8 +104,8 @@ namespace Communication.Packets
             // buffer compaction.
             Buffer.BlockCopy(this._buffer, readPosition, this._buffer, 0, remainSize);
         }
-
-        public void Dispose()
+		
+		public void Dispose()
         {
             Array.Clear(this._buffer, 0, this._lastPosition);
             this._readPosition = 0;
@@ -186,7 +113,7 @@ namespace Communication.Packets
 
             this._buffer = null;
 
-            // don't dispose, just null;
+            // don't dispose, just set null;
             this._responseSocket = null;
             this._mediator = null;
         }

@@ -1,11 +1,11 @@
-﻿using System;
-using System.Resources;
-using Define.Classes.Args;
+﻿using Define.Classes.Args;
 using Define.Interfaces;
+using System;
+using System.Threading;
 
 namespace Define.Classes
 {
-    public class ServiceStatus : IServiceStatus
+	public class ServiceStatus : IServiceStatus
     {
         public GetServiceStatusResponse GetServiceStatus(GetServiceStatusRequest request)
         {
@@ -16,8 +16,34 @@ namespace Define.Classes
         public SetServiceStatusResponse SetServiceStatus(SetServiceStatusRequest request)
         {
             //Console.WriteLine("[IServiceStatus SetServiceStatus] ClinetHash : {0}", request.ClientHash);
+			Thread.Sleep(2000);
             var clientHash = request.ClientHash;
             return new SetServiceStatusResponse { IsSuccess = true, ClientHash = ++clientHash };
         }
+
+        public Pong KeepAlive(Ping request)
+        {
+            var sendTime = request.SendTimeStamp;
+            Console.WriteLine("[KeepAlive] send time : {0}", sendTime);
+
+			Thread.Sleep(2000);
+
+			return new Pong
+			{
+				IsSuccess = true,
+				ReceivedTimeStamp = DateTime.UtcNow
+			};
+
+			//return await Task.Run(() =>
+			//{
+			//    Thread.Sleep(2000);
+
+			//    return new Pong
+			//    {
+			//        IsSuccess = true,
+			//        ReceivedTimeStamp = DateTime.UtcNow
+			//    };
+			//});
+		}
     }
 }
