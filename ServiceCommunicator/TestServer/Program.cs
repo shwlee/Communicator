@@ -1,5 +1,7 @@
 ﻿using System;
+using Common.Threading;
 using Communication;
+using Communication.Packets;
 using Define.Classes;
 using Define.Classes.Args;
 using Define.Interfaces;
@@ -42,7 +44,7 @@ namespace TestServer
 
 	    static async void SendTest(Communicator com)
 	    {
-			var result = await com.SendAsync((IServiceStatus s) => s.KeepAlive(new Ping { SendTimeStamp = DateTime.UtcNow }));
+		    var result = await com.Proxy<IServiceStatus>(CallFlow.Notify).AsAsync(s => s.KeepAlive(new Ping { SendTimeStamp = DateTime.UtcNow }));
 		    Console.WriteLine(result);
 		}
     }

@@ -30,6 +30,19 @@ namespace Communication.Sockets
             this.StartReceive(state);
         }
 
+	    public async Task ConnectAsync(string ip, int port)
+	    {
+			this._socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+			await this._socket.ConnectToAsync(ip, port);
+
+			var state = new StateObject
+			{
+				WorkSocket = this._socket,
+				Buffer = BufferPool.Instance.GetBuffer(BufferPool.Buffer1024Size)
+			};
+			this.StartReceive(state);
+		}
+
         private void StartReceive(StateObject state)
         {
             try
@@ -48,7 +61,7 @@ namespace Communication.Sockets
                 this.ClientId = new Guid(readBuffer);
                 state.ClientId = this.ClientId;
 
-                serviceSocket.BeginReceive(state.Buffer, 0, BufferPool.Buffer1024Size, SocketFlags.None, Communicator.ReceiveResponseCallback, state);
+                serviceSocket.BeginReceive(state.Buffer, 0, BufferPool.Buffer1024Size, SocketFlags.None, Communicator.ReceiveCallback, state);
             }
             catch (Exception ex)
             {
@@ -57,26 +70,14 @@ namespace Communication.Sockets
             }
         }
 
-        public async Task<int> SendAsync(byte[] packet, Guid clientId = default(Guid))
+        public async Task<int> SendAsync(byte[] packet, Guid clientId = default(Guid)) // no need client id in client side.
         {
-            if (clientId == default(Guid))
-            {
-                // TODO : not connected. need logging.
-                return 0;
-            }
-
             return await this._socket.SendPacketAsync(packet);
         }
 
-	    public int Send(byte[] packet, Guid clientId = new Guid())
-	    {
-			if (clientId == default(Guid))
-			{
-				// TODO : not connected. need logging.
-				return 0;
-			}
-
-		    return this._socket.Send(packet, 0, packet.Length, SocketFlags.None);
+	    public int Send(byte[] packet, Guid clientId = new Guid()) // no need client id in client side.
+		{
+			return this._socket.Send(packet, 0, packet.Length, SocketFlags.None);
 	    }
 
 	    public void Dispose()

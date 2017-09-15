@@ -26,24 +26,13 @@ namespace Define.Classes
             var sendTime = request.SendTimeStamp;
             Console.WriteLine("[KeepAlive] send time : {0}", sendTime);
 
-			Thread.Sleep(2000);
+			//Thread.Sleep(2000);
 
 			return new Pong
 			{
 				IsSuccess = true,
 				ReceivedTimeStamp = DateTime.UtcNow
 			};
-
-			//return await Task.Run(() =>
-			//{
-			//    Thread.Sleep(2000);
-
-			//    return new Pong
-			//    {
-			//        IsSuccess = true,
-			//        ReceivedTimeStamp = DateTime.UtcNow
-			//    };
-			//});
 		}
     }
 }

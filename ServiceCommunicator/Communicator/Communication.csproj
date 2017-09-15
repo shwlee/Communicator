@@ -49,9 +49,13 @@
     <Compile Include="AsyncResponse\ResponseAwaits.cs" />
     <Compile Include="Hydrations\HydrateExpression.cs" />
     <Compile Include="Hydrations\ProtocolHash.cs" />
+    <Compile Include="Proxy\ProxyContext.cs" />
+    <Compile Include="Proxy\ProxyModels.cs" />
     <Compile Include="Packets\PacketGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Communicator.cs" />
+    <Compile Include="Proxy\ServiceProxy.cs" />
+    <Compile Include="Proxy\ServiceProxyFactory.cs" />
     <Compile Include="Sockets\OutgoingSocket.cs" />
     <Compile Include="Packets\PacketDirection.cs" />
     <Compile Include="Packets\PacketHandler.cs" />

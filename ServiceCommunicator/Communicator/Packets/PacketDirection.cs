@@ -6,4 +6,13 @@ namespace Communication.Packets
         Incomming,
         Outgoing,
     }
+
+	public enum CallFlow
+	{
+		// send to server.
+		Request,
+
+		// send to client.
+		Notify
+	}
 }

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Common.Threading;
 using Communication;
+using Communication.Packets;
 using Define.Classes;
 using Define.Classes.Args;
 using Define.Interfaces;
@@ -43,7 +45,7 @@ namespace TestClient
                         //{
                             SendTest(communicator, clientId);
 
-                        //    _sendCount++;
+                            _sendCount++;
                         //}
                         break;
                     case "q":
@@ -70,6 +72,16 @@ namespace TestClient
 				Status = true
 			};
 
+			var response = com.Proxy<IServiceStatus>(CallFlow.Request).AsAsync(s => s.KeepAlive(new Ping
+			{
+				ClientHash = hash,
+				SendTimeStamp = DateTime.UtcNow
+			}));
+
+
+			var result = await response;
+			Console.WriteLine("Received Response. IsSuccess : {0}, Time : {1}", result.IsSuccess, result.ReceivedTimeStamp);
+
 			//Console.WriteLine("[Start Send] Hash : {0}", hash);
 
 			//var response = com.Send((IServiceStatus service) => service.SetServiceStatus(request), clientId);
@@ -86,15 +98,15 @@ namespace TestClient
 			//}), clientId);
 			//var result = await response;
 
-			var response = com.SendAsync((IServiceStatus svc) => svc.KeepAlive(new Ping
-			{
-				ClientHash = hash,
-				SendTimeStamp = DateTime.UtcNow
-			}), clientId);
+			//var response = com.Proxy<IServiceStatus>(CallFlow.Request).KeepAlive(new Ping
+			//{
+			//	ClientHash = hash,
+			//	SendTimeStamp = DateTime.UtcNow
+			//});
 
-			
-			var result = await response;
-			Console.WriteLine("Received Response. IsSuccess : {0}, ClientHash : {1}", result.IsSuccess, result.ReceivedTimeStamp);
+
+			//var result = response;
+			//Console.WriteLine("Received Response. IsSuccess : {0}, ClientHash : {1}", result.IsSuccess, result.ReceivedTimeStamp);
 
 			//var response = com.SendAsync((IServiceStatus svc) => svc.KeepAlive(new Ping
 			//{
@@ -111,6 +123,8 @@ namespace TestClient
 			//Console.WriteLine("Received Response. IsSuccess : {0}, ClientHash : {1}", result.IsSuccess, result.ReceivedTimeStamp);
 
 			//Console.WriteLine("Received Response. IsSuccess : {0}, ClientHash : {1}", response.IsSuccess, response.ClientHash);
+
+
 		}
     }
 }

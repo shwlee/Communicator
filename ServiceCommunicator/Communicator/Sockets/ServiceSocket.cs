@@ -83,7 +83,7 @@ namespace Communication.Sockets
                     
                     Console.WriteLine("[Connect client] {0}", state.ClientId);
 
-                    clientSocket.BeginReceive(state.Buffer, 0, BufferPool.Buffer1024Size, SocketFlags.None, Communicator.ReceiveServiceCallback, state);
+                    clientSocket.BeginReceive(state.Buffer, 0, BufferPool.Buffer1024Size, SocketFlags.None, Communicator.ReceiveCallback, state);
                 }, TaskCreationOptions.LongRunning);
 
                 serviceSocket.BeginAccept(this.OnAccept, serviceSocket);
