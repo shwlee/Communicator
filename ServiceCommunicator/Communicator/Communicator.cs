@@ -9,34 +9,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Communication
 {
 	public class Communicator
 	{
-		private static InstanceMediator _mediator = new InstanceMediator();
+		private static readonly InstanceMediator _mediator = new InstanceMediator();
 
 		private ServiceSocket _service;
-
-		private static object _syncBlock = new object();
-
+		
 		// allow only 1 connect
 		private OutgoingSocket _outgoing;
 
-		private Dictionary<CallFlow, List<IProxyContainer>> _proxies = new Dictionary<CallFlow, List<IProxyContainer>>();
+		private static readonly object _syncBlock = new object();
 
-		public Guid ClientId
-		{
-			get
-			{
-				if (this._outgoing == null)
-				{
-					return default(Guid);
-				}
+		private readonly Dictionary<CallFlow, List<IProxyContainer>> _syncProxies = new Dictionary<CallFlow, List<IProxyContainer>>();
 
-				return this._outgoing.ClientId;
-			}
-		}
+		private readonly Dictionary<CallFlow, List<IProxyContainer>> _asyncProxies = new Dictionary<CallFlow, List<IProxyContainer>>();
+
+		public Guid ClientId => this._outgoing?.ClientId ?? default(Guid);
+
+		public List<Guid> ConnectedClients => this._service.ConnectedClients;
 
 		public void Initialize(params object[] instances)
 		{
@@ -55,27 +49,97 @@ namespace Communication
 			this._outgoing.Connect(ip, port);
 		}
 
-		public T Proxy<T>(CallFlow flow) where T : class
+		/// <summary>
+		/// Gets synchronous server proxy when request message client to server.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <returns></returns>
+		public T ServerProxy<T>() where T : class
 		{
+			return this.Proxy<T>(CallFlow.Request);
+		}
+
+		/// <summary>
+		/// Gets synchronous client proxy when request message server to client.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <returns></returns>
+		public T ClientProxy<T>() where T : class
+		{
+			return this.Proxy<T>(CallFlow.Notify);
+		}
+
+		public async Task<TResult> CallToServerAsync<T, TResult>(Func<T, TResult> func)
+			where T : class
+			where TResult : class
+		{
+			return await this.AsyncProxy<T>(CallFlow.Request).CallAsync(func);
+		}
+
+		public async Task<TResult> CallToClientAsync<T, TResult>(Func<T, TResult> func, Guid clientId)
+			where T : class
+			where TResult : class
+		{
+			return await this.AsyncProxy<T>(CallFlow.Notify).CallAsync(func, clientId);
+		}
+
+		private T Proxy<T>(CallFlow flow) where T : class
+		{
+			// TODO : improvement pool structure
+
 			lock (_syncBlock)
 			{
-				if (this._proxies.ContainsKey(flow) == false)
+				if (this._syncProxies.ContainsKey(flow) == false)
 				{
-					var socketSender = flow == CallFlow.Notify ? (ISocketSender)this._service : this._outgoing;
-					var newProxy = ServiceProxyFactory<T>.GetProxy(socketSender);
-
-					IProxyContainer proxyContext = new ProxyContext<T>(newProxy);
-					
-					this._proxies.Add(flow, new List<IProxyContainer> { proxyContext });
-
-					return newProxy;
+					return this.AddProxy<T>(flow);
 				}
 
-				var proxyList = this._proxies[flow];
+				var proxyList = this._syncProxies[flow];
 				var proxy = proxyList.FirstOrDefault(p => p.IsMatchType<T>());
+				if (proxy == null)
+				{
+					return this.AddProxy<T>(flow);
+				}
+
 				var model = proxy as IProxyContext<T>;
 				return model?.Proxy;
 			}
+		}
+		
+		private IAsyncProxy<T> AsyncProxy<T>(CallFlow flow) where T : class
+		{
+			// TODO : improvement pool structure
+
+			lock (_syncBlock)
+			{
+				if (this._asyncProxies.ContainsKey(flow) == false)
+				{
+					return this.AddAsyncProxy<T>(flow);
+				}
+
+				var proxyList = this._asyncProxies[flow];
+				var proxy = proxyList.FirstOrDefault(p => p.IsMatchType<T>());
+				return proxy as IAsyncProxy<T> ?? this.AddAsyncProxy<T>(flow);
+			}
+		}
+
+		private T AddProxy<T>(CallFlow flow) where T : class
+		{
+			var socketSender = flow == CallFlow.Notify ? (ISocketSender) this._service : this._outgoing;
+			var newProxy = ServiceProxyFactory<T>.GetProxy(socketSender);
+			var proxyContext = new ProxyContext<T>(newProxy);
+			this._syncProxies.Add(flow, new List<IProxyContainer> {proxyContext});
+
+			return newProxy;
+		}
+
+		private IAsyncProxy<T> AddAsyncProxy<T>(CallFlow flow) where T : class
+		{
+			var socketSender = flow == CallFlow.Notify ? (ISocketSender) this._service : this._outgoing;
+			var newProxy = new AsyncServiceProxy<T>(socketSender);
+			this._asyncProxies.Add(flow, new List<IProxyContainer> {newProxy});
+
+			return newProxy;
 		}
 
 		internal static void ReceiveCallback(IAsyncResult ar)

@@ -13,10 +13,13 @@ namespace Communication.Sockets
 {
 	public class ServiceSocket : ISocketSender
     {
-        private List<StateObject> _connectedClients = new List<StateObject>();
-        private Socket _socket;
+        private readonly List<StateObject> _connectedClients = new List<StateObject>();
+		
+		private Socket _socket;
 
-        public void StartService(int port, int backlog)
+		public List<Guid> ConnectedClients => this._connectedClients.Select(c => c.ClientId).ToList();
+
+		public void StartService(int port, int backlog)
         {
             var ipEndpoint = new IPEndPoint(IPAddress.Any, port);
 

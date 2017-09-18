@@ -15,9 +15,10 @@ namespace Define.Classes
 
         public SetServiceStatusResponse SetServiceStatus(SetServiceStatusRequest request)
         {
-            //Console.WriteLine("[IServiceStatus SetServiceStatus] ClinetHash : {0}", request.ClientHash);
-			Thread.Sleep(2000);
-            var clientHash = request.ClientHash;
+			//Console.WriteLine("[IServiceStatus SetServiceStatus] ClinetHash : {0}", request.ClientHash);
+			//Thread.Sleep(2000);
+			Console.WriteLine("[SetServiceStatus] @@@@@@@@@@ client hash : {0}", request.ClientHash);
+			var clientHash = request.ClientHash;
             return new SetServiceStatusResponse { IsSuccess = true, ClientHash = ++clientHash };
         }
 
@@ -26,7 +27,7 @@ namespace Define.Classes
             var sendTime = request.SendTimeStamp;
             Console.WriteLine("[KeepAlive] send time : {0}", sendTime);
 
-			//Thread.Sleep(2000);
+			Thread.Sleep(2000);
 
 			return new Pong
 			{

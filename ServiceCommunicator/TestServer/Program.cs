@@ -1,14 +1,14 @@
-﻿using System;
-using Common.Threading;
-using Communication;
-using Communication.Packets;
+﻿using Communication;
 using Define.Classes;
 using Define.Classes.Args;
 using Define.Interfaces;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace TestServer
 {
-    class Program
+	class Program
     {
         const int ServicePort = 8009;
 
@@ -24,15 +24,15 @@ namespace TestServer
             var isContinue = true;
             while (isContinue)
             {
-                var input = Console.ReadLine();
-                switch (input)
+                var input = Console.ReadKey();
+                switch (input.Key)
                 {
-                    case "c": // test memory
+                    case ConsoleKey.C: // test memory
 		                SendTest(communicator);
 						GC.Collect();
                         break;
-                    case "":
-                    case "q":
+                    case ConsoleKey.Spacebar:
+                    case ConsoleKey.Q:
                         isContinue = false;
                         break;
                 }
@@ -44,8 +44,17 @@ namespace TestServer
 
 	    static async void SendTest(Communicator com)
 	    {
-		    var result = await com.Proxy<IServiceStatus>(CallFlow.Notify).AsAsync(s => s.KeepAlive(new Ping { SendTimeStamp = DateTime.UtcNow }));
-		    Console.WriteLine(result);
+		    var taskList = com.ConnectedClients.Select(clientId => com.CallToClientAsync((IServiceStatus s) => s.KeepAlive(new Ping
+		    {
+			    SendTimeStamp = DateTime.UtcNow
+		    }), clientId)).ToList();
+
+		    await Task.WhenAll(taskList);
+
+		    foreach (var task in taskList)
+		    {
+			    Console.WriteLine(task.Result);
+		    }
 		}
     }
 }

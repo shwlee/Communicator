@@ -1,13 +1,20 @@
-﻿
+﻿using System;
+using System.Threading.Tasks;
+
 namespace Communication.Proxy
 {
-	public interface IProxyContext<T> : IProxyContainer
+	public interface IProxyContainer
+	{
+		bool IsMatchType<T>();
+	}
+
+	public interface IProxyContext<out T> : IProxyContainer
 	{
 		T Proxy { get; }
 	}
 
-	public interface IProxyContainer
+	public interface IAsyncProxy<out T> : IProxyContainer
 	{
-		bool IsMatchType<T>();
+		Task<TResult> CallAsync<TResult>(Func<T, TResult> func, Guid clientId = default(Guid)) where TResult : class;
 	}
 }
