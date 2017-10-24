@@ -1,9 +1,9 @@
-﻿using Communication.Mediator;
+﻿using System;
+using Communication.Mediator;
 using Define.Classes;
 using Define.Classes.Args;
-using System;
 
-namespace ServiceCommunicator
+namespace TestServiceCommunicator
 {
 	class Program
     {

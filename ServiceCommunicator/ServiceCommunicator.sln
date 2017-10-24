@@ -5,13 +5,13 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestServiceCommunicator", "TestServiceCommunicator\TestServiceCommunicator.csproj", "{14A25DD4-32A8-461E-8BB6-5DAD7132445D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Communication.Mediator", "Mediator\Communication.Mediator.csproj", "{1C1356C0-85A6-4DEE-9F6A-AED52165A0EF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Communication.Mediator", "Communication.Mediator\Communication.Mediator.csproj", "{1C1356C0-85A6-4DEE-9F6A-AED52165A0EF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Define", "Define\Define.csproj", "{661B2424-F567-46C3-BF51-68049FE86558}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Communication.Common", "Common\Communication.Common.csproj", "{FAF48602-4478-48CF-A0CF-7FD457AE1FA1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Communication.Common", "Communication.Common\Communication.Common.csproj", "{FAF48602-4478-48CF-A0CF-7FD457AE1FA1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Communication.Core", "Communicator\Communication.Core.csproj", "{90FC0A23-FAC7-4346-B24A-38729AF56528}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Communication.Core", "Communication.Core\Communication.Core.csproj", "{90FC0A23-FAC7-4346-B24A-38729AF56528}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{A3E367FF-B5AD-45BC-BEA8-39E54AF8FB43}"
 	ProjectSection(SolutionItems) = preProject
