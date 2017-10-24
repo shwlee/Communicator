@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Common.Threading;
-using Communication;
-using Communication.Packets;
+using Communication.Core;
 using Define.Classes;
 using Define.Classes.Args;
 using Define.Interfaces;
@@ -26,9 +24,7 @@ namespace TestClient
 			var serviceStatus = new ServiceStatus();
 			communicator.Initialize(serviceStatus); // if need interface implement in client side.
 			communicator.ConnectToService(ipInput, ServicePort);
-
-			var clientId = communicator.ClientId;
-
+			
 			Console.WriteLine("Connect to Service Start! IP : {0}, Port : {1}", ipInput, ServicePort);
 
 			var isContinue = true;
@@ -74,6 +70,7 @@ namespace TestClient
 				var pingResponse = await com.CallToServerAsync((IServiceStatus s) => s.KeepAlive(new Ping
 				{
 					ClientHash = hash,
+					ClientId = com.ClientId,
 					SendTimeStamp = DateTime.UtcNow
 				}));
 
@@ -85,6 +82,7 @@ namespace TestClient
 				var setStatusResponse = await com.CallToServerAsync((IServiceStatus s) => s.SetServiceStatus(new SetServiceStatusRequest
 				{
 					ClientHash = hash,
+					ClientId = com.ClientId,
 					Status = true
 				}));
 
@@ -98,6 +96,7 @@ namespace TestClient
 			//	var pingResponse = com.ServerProxy<IServiceStatus>().KeepAlive(new Ping
 			//	{
 			//		ClientHash = hash,
+			//		ClientId = com.ClientId,
 			//		SendTimeStamp = DateTime.UtcNow
 			//	});
 
@@ -109,6 +108,7 @@ namespace TestClient
 			//	var setStatusResponse = com.ServerProxy<IServiceStatus>().SetServiceStatus(new SetServiceStatusRequest
 			//	{
 			//		ClientHash = hash,
+			//		ClientId = com.ClientId,
 			//		Status = true
 			//	});
 

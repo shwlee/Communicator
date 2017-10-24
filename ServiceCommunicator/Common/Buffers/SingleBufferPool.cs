@@ -1,11 +1,11 @@
-﻿using Define.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Timers;
+using Communication.Common.Interfaces;
 
-namespace Common.Communication
+namespace Communication.Common.Buffers
 {
 	class SingleBufferPool : IBufferPool
 	{

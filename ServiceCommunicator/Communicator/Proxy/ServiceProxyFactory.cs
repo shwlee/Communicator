@@ -1,7 +1,7 @@
 ﻿using System;
-using Common.Interfaces;
+using Communication.Common.Interfaces;
 
-namespace Communication.Proxy
+namespace Communication.Core.Proxy
 {
 	public class ServiceProxyFactory<T> where T : class
 	{

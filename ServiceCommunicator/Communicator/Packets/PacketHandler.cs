@@ -1,10 +1,10 @@
-﻿using Common.Communication;
-using Mediator;
-using System;
+﻿using System;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
+using Communication.Common.Buffers;
+using Communication.Mediator;
 
-namespace Communication.Packets
+namespace Communication.Core.Packets
 {
 	/// <summary>
 	/// Packet tokenizing and response from received Packet.

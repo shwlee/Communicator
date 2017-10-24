@@ -1,7 +1,6 @@
-﻿
-using System;
+﻿using System;
 
-namespace Common.Communication
+namespace Communication.Common.Buffers
 {
 	class InPoolBuffer : IDisposable
 	{

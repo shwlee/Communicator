@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace Common.Threading
+namespace Communication.Common.Threading
 {
 	public class MainSynchronizationContext
 	{

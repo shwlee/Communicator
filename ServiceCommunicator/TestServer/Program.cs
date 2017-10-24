@@ -1,10 +1,10 @@
-﻿using Communication;
-using Define.Classes;
+﻿using Define.Classes;
 using Define.Classes.Args;
 using Define.Interfaces;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Communication.Core;
 
 namespace TestServer
 {

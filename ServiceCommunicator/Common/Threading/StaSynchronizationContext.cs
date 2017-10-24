@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Common.Threading
+namespace Communication.Common.Threading
 {
 	public class StaSynchronizationContext : SynchronizationContext, IDisposable
 	{
@@ -22,7 +22,7 @@ namespace Common.Threading
 		public StaSynchronizationContext(string contextName)
 		{
 			this._workingCollection = new BlockingCollection<Action>();
-			this._workerThread = new Thread(DoWork)
+			this._workerThread = new Thread(this.DoWork)
 			{
 				Name = contextName
 			};
@@ -122,7 +122,7 @@ namespace Common.Threading
 		~StaSynchronizationContext()
 		{
 			Console.WriteLine("Call SyncContext Finalizer");
-			DoDispose(false);
+			this.DoDispose(false);
 		}
 
 		public void Dispose()

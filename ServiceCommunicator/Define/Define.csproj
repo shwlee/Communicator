@@ -50,7 +50,6 @@
     <Compile Include="Classes\BaseArgs\Request.cs" />
     <Compile Include="Classes\BaseArgs\Response.cs" />
     <Compile Include="Classes\ServiceStatus.cs" />
-    <Compile Include="Interfaces\IBufferPool.cs" />
     <Compile Include="Interfaces\IServiceStatus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

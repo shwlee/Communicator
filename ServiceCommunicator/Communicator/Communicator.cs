@@ -1,17 +1,17 @@
-﻿using Common.Communication;
-using Common.Interfaces;
-using Communication.Packets;
-using Communication.Proxy;
-using Communication.Sockets;
-using Mediator;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Communication.Common.Buffers;
+using Communication.Common.Interfaces;
+using Communication.Core.Packets;
+using Communication.Core.Proxy;
+using Communication.Core.Sockets;
+using Communication.Mediator;
 
-namespace Communication
+namespace Communication.Core
 {
 	public class Communicator
 	{

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Common.Threading
+namespace Communication.Common.Threading
 {
 	public static class AsyncExtension
 	{

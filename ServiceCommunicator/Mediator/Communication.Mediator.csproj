@@ -7,8 +7,8 @@
     <ProjectGuid>{1C1356C0-85A6-4DEE-9F6A-AED52165A0EF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Mediator</RootNamespace>
-    <AssemblyName>Mediator</AssemblyName>
+    <RootNamespace>Communication.Mediator</RootNamespace>
+    <AssemblyName>Communication.Mediator</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
@@ -53,9 +53,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Common\Common.csproj">
+    <ProjectReference Include="..\Common\Communication.Common.csproj">
       <Project>{faf48602-4478-48cf-a0cf-7fd457ae1fa1}</Project>
-      <Name>Common</Name>
+      <Name>Communication.Common</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

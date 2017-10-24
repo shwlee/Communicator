@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Communication.Proxy
+namespace Communication.Core.Proxy
 {
 	public interface IProxyContainer
 	{

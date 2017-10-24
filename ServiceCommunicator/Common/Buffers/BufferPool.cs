@@ -1,7 +1,7 @@
-﻿using Define.Interfaces;
-using System;
+﻿using System;
+using Communication.Common.Interfaces;
 
-namespace Common.Communication
+namespace Communication.Common.Buffers
 {
 	public class BufferPool
 	{

@@ -1,6 +1,7 @@
 ﻿using System;
+using Communication.Common.Buffers;
 
-namespace Common.Communication
+namespace Communication.Common.Packets
 {
 	public class RawMessage
 	{

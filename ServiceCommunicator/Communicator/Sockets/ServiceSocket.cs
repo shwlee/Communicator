@@ -1,15 +1,14 @@
-﻿using Common.Communication;
-using Common.Interfaces;
-using Mediator;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
-using Communication.Packets;
+using Communication.Common.Buffers;
+using Communication.Common.Interfaces;
 
-namespace Communication.Sockets
+namespace Communication.Core.Sockets
 {
 	public class ServiceSocket : ISocketSender
     {
@@ -18,6 +17,8 @@ namespace Communication.Sockets
 		private Socket _socket;
 
 		public List<Guid> ConnectedClients => this._connectedClients.Select(c => c.ClientId).ToList();
+
+		public Action AuthenticationMethod { get; set; }
 
 		public void StartService(int port, int backlog)
         {
@@ -40,54 +41,55 @@ namespace Communication.Sockets
 
             try
             {
-                var clientSocket = serviceSocket.EndAccept(ar);
+	            lock (this)
+	            {
+					var clientSocket = serviceSocket.EndAccept(ar);
 
-                // clear old connection.
-                this._connectedClients.RemoveAll(s =>
-                {
-                    try
-                    {
-                        if (s.WorkSocket.Connected == false)
-                        {
-                            return true;
-                        }
+					// clear old connection.
+					this._connectedClients.RemoveAll(s =>
+					{
+						try
+						{
+							return s.WorkSocket.Connected == false;
+						}
+						catch
+						{
+							return true;
+						}
+					});
 
-                        return false;
-                    }
-                    catch
-                    {
-                        return true;
-                    }
-                });
+					var alreadyConnected = this._connectedClients.FirstOrDefault(s => s.WorkSocket.RemoteEndPoint.Equals(clientSocket.RemoteEndPoint));
+					if (alreadyConnected != null)
+					{
+						alreadyConnected.WorkSocket.Disconnect(false);
+						alreadyConnected.WorkSocket.Dispose();
+						alreadyConnected.Buffer = null;
+						this._connectedClients.Remove(alreadyConnected);
+					}
 
-                var alreadyConnected = this._connectedClients.FirstOrDefault(s => s.WorkSocket.RemoteEndPoint.Equals(clientSocket.RemoteEndPoint));
-                if (alreadyConnected != null)
-                {
-                    alreadyConnected.WorkSocket.Disconnect(false);
-                    alreadyConnected.WorkSocket.Dispose();
-                    alreadyConnected.Buffer = null;
-                    this._connectedClients.Remove(alreadyConnected);
-                }
+					var state = new StateObject
+					{
+						ClientId = Guid.NewGuid(),
+						WorkSocket = clientSocket,
+						Buffer = BufferPool.Instance.GetBuffer(BufferPool.Buffer1024Size)
+					};
 
-                var state = new StateObject
-                {
-                    ClientId = Guid.NewGuid(), 
-                    WorkSocket = clientSocket,
-					Buffer = BufferPool.Instance.GetBuffer(BufferPool.Buffer1024Size)
-				};
+					this._connectedClients.Add(state);
+					
+					// connection management in communication module.
+					Task.Run(() =>
+					{
+						// TODO : need verification proeccess for client auth.
+						var clientIdPacket = state.ClientId.ToByteArray();
+						clientSocket.Send(clientIdPacket);
 
-                this._connectedClients.Add(state);
+						Console.WriteLine("[Connect client] Process thread : {0}, ClientId : {1}", Thread.CurrentThread.ManagedThreadId, state.ClientId);
 
-				// TODO : Move to Server logic
-                Task.Factory.StartNew(() =>
-                {
-                    var clientIdPacket = state.ClientId.ToByteArray();
-                    clientSocket.Send(clientIdPacket);
-                    
-                    Console.WriteLine("[Connect client] {0}", state.ClientId);
+						this.AuthenticationMethod?.Invoke();
 
-                    clientSocket.BeginReceive(state.Buffer, 0, BufferPool.Buffer1024Size, SocketFlags.None, Communicator.ReceiveCallback, state);
-                }, TaskCreationOptions.LongRunning);
+						clientSocket.BeginReceive(state.Buffer, 0, BufferPool.Buffer1024Size, SocketFlags.None, Communicator.ReceiveCallback, state);
+					});
+				}
 
                 serviceSocket.BeginAccept(this.OnAccept, serviceSocket);
             }
@@ -137,7 +139,19 @@ namespace Communication.Sockets
 			return clientSocket.Send(packet, 0, packet.Length, SocketFlags.None);
 		}
 
-	    public void StopService()
+		public void Disconnect(IStateObject state)
+		{
+			var client = this._connectedClients.FirstOrDefault(s => s.ClientId == state.ClientId);
+			if (client == null)
+			{
+				return;
+			}
+
+			client.Dispose();
+			this._connectedClients.Remove(client);
+		}
+
+		public void StopService()
         {
             if (this._socket == null)
             {

@@ -1,5 +1,5 @@
 ﻿
-namespace Communication.Proxy
+namespace Communication.Core.Proxy
 {
 	public class ProxyContext<T> : IProxyContext<T>
 	{

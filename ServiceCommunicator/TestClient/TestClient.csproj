@@ -51,13 +51,13 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Common\Common.csproj">
+    <ProjectReference Include="..\Common\Communication.Common.csproj">
       <Project>{faf48602-4478-48cf-a0cf-7fd457ae1fa1}</Project>
-      <Name>Common</Name>
+      <Name>Communication.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Communicator\Communication.csproj">
+    <ProjectReference Include="..\Communicator\Communication.Core.csproj">
       <Project>{90fc0a23-fac7-4346-b24a-38729af56528}</Project>
-      <Name>Communication</Name>
+      <Name>Communication.Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\Define\Define.csproj">
       <Project>{661b2424-f567-46c3-bf51-68049fe86558}</Project>

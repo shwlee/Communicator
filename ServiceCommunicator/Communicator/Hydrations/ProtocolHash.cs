@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 
-namespace Communication.Hydrations
+namespace Communication.Core.Hydrations
 {
 	public class ProtocolHash
 	{

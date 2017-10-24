@@ -3,13 +3,14 @@ using System.Reflection;
 using System.Runtime.Remoting.Messaging;
 using System.Runtime.Remoting.Proxies;
 using System.Threading.Tasks;
-using Common.Communication;
-using Common.Interfaces;
-using Communication.AsyncResponse;
-using Communication.Hydrations;
-using Communication.Packets;
+using Communication.Common.Buffers;
+using Communication.Common.Interfaces;
+using Communication.Core.AsyncResponse;
+using Communication.Core.Hydrations;
+using Communication.Core.Packets;
+using Communication.Common.Packets;
 
-namespace Communication.Proxy
+namespace Communication.Core.Proxy
 {
 	public class ServiceProxy<T> : RealProxy, IDisposable
 	{

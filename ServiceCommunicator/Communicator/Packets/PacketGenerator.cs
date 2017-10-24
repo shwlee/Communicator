@@ -1,14 +1,15 @@
-﻿using Common.Communication;
-using Communication.AsyncResponse;
-using Communication.Sockets;
-using Mediator;
-using System;
+﻿using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Communication.Common.Buffers;
+using Communication.Common.Packets;
+using Communication.Core.AsyncResponse;
+using Communication.Core.Sockets;
+using Communication.Mediator;
 
-namespace Communication.Packets
+namespace Communication.Core.Packets
 {
 	public class PacketGenerator
 	{
@@ -165,9 +166,9 @@ namespace Communication.Packets
 					var tcs = new TaskCompletionSource<bool>();
 					tcs.SetResult(ResponseAwaits.MatchResponse(completedPacket));
 
-					var isRequest = await tcs.Task;
+					var isRequestPacket = await tcs.Task;
 
-					if (isRequest == false)
+					if (isRequestPacket == false)
 					{
 						return;
 					}
@@ -185,6 +186,7 @@ namespace Communication.Packets
 					{
 						var arg = ProtoBuf.Serializer.NonGeneric.Deserialize(mediatorContext.ArgumentType, argStream);
 
+						// execute service interface method.
 						var result = mediatorContext.Execute.DynamicInvoke(arg);
 						
 						var responsePacket = GeneratePacket(string.Empty, string.Empty, result, preamble);

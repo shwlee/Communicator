@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq.Expressions;
-using Common.Communication;
+using Communication.Common.Packets;
 
-namespace Communication.Hydrations
+namespace Communication.Core.Hydrations
 {
 	public class HydrateExpression
 	{

@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Net.Sockets;
-using Common.Communication;
-using Communication.Packets;
+using Communication.Common.Buffers;
+using Communication.Common.Interfaces;
+using Communication.Core.Packets;
 
-namespace Communication.Sockets
+namespace Communication.Core.Sockets
 {
-	class StateObject : IDisposable
+	class StateObject : IStateObject
 	{
-        internal Guid ClientId { get; set; }
+        public Guid ClientId { get; set; }
 
         internal Socket WorkSocket { get; set; }
         
@@ -19,25 +20,19 @@ namespace Communication.Sockets
 
         public void Dispose()
         {
-            if (this.WorkSocket != null)
-            {
-                this.WorkSocket.Dispose();
-                this.WorkSocket = null;
-            }
+	        this.WorkSocket?.Dispose();
+	        this.PacketHandler?.Dispose();
 
-            if (this.PacketHandler != null)
-            {
-                this.PacketHandler.Dispose();
-            }
-
-            if (this.Buffer != null)
+	        if (this.Buffer != null)
             {
                 BufferPool.Instance.ReturnBuffer(this.Buffer);
             }
 
             this.Buffer = null;
+			this.WorkSocket = null;
+	        this.PacketHandler = null;
         }
 
-        #endregion
-    }
+		#endregion
+	}
 }

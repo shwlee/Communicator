@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using Common.Communication;
-using Common.Interfaces;
-using Communication.Packets;
-using Mediator;
+using Communication.Common.Buffers;
+using Communication.Common.Interfaces;
 
-namespace Communication.Sockets
+namespace Communication.Core.Sockets
 {
-    /// <summary>
-    /// Socket to connect service.
-    /// </summary>
-    public class OutgoingSocket : ISocketSender
+	/// <summary>
+	/// Socket to connect service.
+	/// </summary>
+	public class OutgoingSocket : ISocketSender
     {
         private Socket _socket;
 
@@ -67,7 +65,8 @@ namespace Communication.Sockets
             {
                 // TODO : need logging.
                 Console.WriteLine(ex);
-            }
+				state.Dispose();
+			}
         }
 
         public async Task<int> SendAsync(byte[] packet, Guid clientId = default(Guid)) // no need client id in client side.
@@ -80,7 +79,14 @@ namespace Communication.Sockets
 			return this._socket.Send(packet, 0, packet.Length, SocketFlags.None);
 	    }
 
-	    public void Dispose()
+		public void Disconnect(IStateObject state)
+		{
+			// send disconnect message.
+
+			this.Dispose();
+		}
+
+		public void Dispose()
         {
             if (this._socket == null)
             {
@@ -88,8 +94,19 @@ namespace Communication.Sockets
                 return;
             }
 
-            this._socket.Dispose();
-            this._socket = null;
+			try
+			{
+				this._socket.Dispose();
+				this._socket = null;
+			}
+			catch (ObjectDisposedException dex)
+			{
+				Console.WriteLine("Already disposed.");
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex);
+			}
         }
     }
 }

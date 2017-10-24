@@ -1,8 +1,8 @@
-﻿using Define.Interfaces;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Communication.Common.Interfaces;
 
-namespace Common.Communication
+namespace Communication.Common.Buffers
 {
 	class QueuedBufferPool : IBufferPool
 	{

@@ -1,4 +1,5 @@
-﻿using Define.Classes.Args;
+﻿using System;
+using Define.Classes.Args;
 using ProtoBuf;
 
 namespace Define.Classes.BaseArgs
@@ -10,5 +11,7 @@ namespace Define.Classes.BaseArgs
 	public class Request
 	{
 	    public int ClientHash;
+
+		public Guid ClientId;
 	}
 }

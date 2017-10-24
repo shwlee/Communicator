@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Communication.Packets;
+using Communication.Core.Packets;
 
-namespace Communication.AsyncResponse
+namespace Communication.Core.AsyncResponse
 {
-    public class ResponseAwaits
+	public class ResponseAwaits
     {
         private static readonly Dictionary<int, TaskCompletionSource<byte[]>> _responseCollection = new Dictionary<int, TaskCompletionSource<byte[]>>();
 		

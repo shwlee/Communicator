@@ -1,5 +1,5 @@
 ﻿
-namespace Define.Interfaces
+namespace Communication.Common.Interfaces
 {
 	public interface IBufferPool
 	{

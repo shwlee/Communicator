@@ -1,15 +1,16 @@
-﻿using Common.Communication;
-using Common.Interfaces;
-using Communication.AsyncResponse;
-using Communication.Hydrations;
-using Communication.Packets;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Runtime.Remoting.Messaging;
 using System.Runtime.Remoting.Proxies;
 using System.Threading.Tasks;
+using Communication.Common.Buffers;
+using Communication.Common.Interfaces;
+using Communication.Common.Packets;
+using Communication.Core.AsyncResponse;
+using Communication.Core.Hydrations;
+using Communication.Core.Packets;
 
-namespace Communication.Proxy
+namespace Communication.Core.Proxy
 {
 	public class AsyncServiceProxy<T> : RealProxy, IAsyncProxy<T>, IDisposable
 	{
