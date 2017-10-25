@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace Communication.Mediator
+namespace Communication.Core.Mediator
 {
 	public class InstanceMediator
 	{

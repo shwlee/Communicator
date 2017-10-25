@@ -1,5 +1,5 @@
 ﻿using System;
-using Communication.Mediator;
+using Communication.Core.Mediator;
 using Define.Classes;
 using Define.Classes.Args;
 

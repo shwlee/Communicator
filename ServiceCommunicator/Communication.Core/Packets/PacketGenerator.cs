@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using Communication.Common.Buffers;
 using Communication.Common.Packets;
 using Communication.Core.AsyncResponse;
+using Communication.Core.Mediator;
 using Communication.Core.Sockets;
-using Communication.Mediator;
 
 namespace Communication.Core.Packets
 {

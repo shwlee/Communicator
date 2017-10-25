@@ -60,10 +60,6 @@
       <Project>{661b2424-f567-46c3-bf51-68049fe86558}</Project>
       <Name>Define</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Communication.Mediator\Communication.Mediator.csproj">
-      <Project>{1c1356c0-85a6-4dee-9f6a-aed52165a0ef}</Project>
-      <Name>Communication.Mediator</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

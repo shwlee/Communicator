@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using Communication.Common.Buffers;
-using Communication.Mediator;
+using Communication.Core.Mediator;
 
 namespace Communication.Core.Packets
 {

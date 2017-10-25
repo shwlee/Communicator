@@ -6,10 +6,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Communication.Common.Buffers;
 using Communication.Common.Interfaces;
+using Communication.Core.Mediator;
 using Communication.Core.Packets;
 using Communication.Core.Proxy;
 using Communication.Core.Sockets;
-using Communication.Mediator;
 
 namespace Communication.Core
 {

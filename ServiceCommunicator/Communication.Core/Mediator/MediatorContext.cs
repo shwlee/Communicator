@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Communication.Mediator
+namespace Communication.Core.Mediator
 {
 	public class MediatorContext
 	{

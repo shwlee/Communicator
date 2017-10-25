@@ -5,8 +5,6 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestServiceCommunicator", "TestServiceCommunicator\TestServiceCommunicator.csproj", "{14A25DD4-32A8-461E-8BB6-5DAD7132445D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Communication.Mediator", "Communication.Mediator\Communication.Mediator.csproj", "{1C1356C0-85A6-4DEE-9F6A-AED52165A0EF}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Define", "Define\Define.csproj", "{661B2424-F567-46C3-BF51-68049FE86558}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Communication.Common", "Communication.Common\Communication.Common.csproj", "{FAF48602-4478-48CF-A0CF-7FD457AE1FA1}"
@@ -34,10 +32,6 @@ Global
 		{14A25DD4-32A8-461E-8BB6-5DAD7132445D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{14A25DD4-32A8-461E-8BB6-5DAD7132445D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{14A25DD4-32A8-461E-8BB6-5DAD7132445D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1C1356C0-85A6-4DEE-9F6A-AED52165A0EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1C1356C0-85A6-4DEE-9F6A-AED52165A0EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1C1356C0-85A6-4DEE-9F6A-AED52165A0EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1C1356C0-85A6-4DEE-9F6A-AED52165A0EF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{661B2424-F567-46C3-BF51-68049FE86558}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{661B2424-F567-46C3-BF51-68049FE86558}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{661B2424-F567-46C3-BF51-68049FE86558}.Release|Any CPU.ActiveCfg = Release|Any CPU
