@@ -15,10 +15,12 @@ namespace Communication.Core
 {
 	public class Communicator
 	{
+		#region Fields
+
 		private static readonly InstanceMediator _mediator = new InstanceMediator();
 
 		private ServiceSocket _service;
-		
+
 		// allow only 1 connect
 		private OutgoingSocket _outgoing;
 
@@ -28,9 +30,17 @@ namespace Communication.Core
 
 		private readonly Dictionary<CallFlow, List<IProxyContainer>> _asyncProxies = new Dictionary<CallFlow, List<IProxyContainer>>();
 
+		#endregion
+
+		#region Properties
+
 		public Guid ClientId => this._outgoing?.ClientId ?? default(Guid);
 
 		public List<Guid> ConnectedClients => this._service.ConnectedClients;
+
+		#endregion
+
+		#region Methods
 
 		public void Initialize(params object[] instances)
 		{
@@ -39,14 +49,22 @@ namespace Communication.Core
 
 		public void StartService(int port, int backlog)
 		{
+			this._service?.Dispose();
+
 			this._service = new ServiceSocket();
 			this._service.StartService(port, backlog);
 		}
 
 		public void ConnectToService(string ip, int port)
 		{
-			this._outgoing = new OutgoingSocket();
+			this.InitOutgoingSocket();
 			this._outgoing.Connect(ip, port);
+		}
+
+		public async Task ConnectToServerAsync(string ip, int port)
+		{
+			this.InitOutgoingSocket();
+			await this._outgoing.ConnectAsync(ip, port);
 		}
 
 		/// <summary>
@@ -76,11 +94,43 @@ namespace Communication.Core
 			return await this.AsyncProxy<T>(CallFlow.Request).CallAsync(func);
 		}
 
+		/// <summary>
+		/// Call to client. The clientId mean that is the target to send client id.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <typeparam name="TResult"></typeparam>
+		/// <param name="func"></param>
+		/// <param name="clientId"></param>
+		/// <returns></returns>
 		public async Task<TResult> CallToClientAsync<T, TResult>(Func<T, TResult> func, Guid clientId)
 			where T : class
 			where TResult : class
 		{
 			return await this.AsyncProxy<T>(CallFlow.Notify).CallAsync(func, clientId);
+		}
+
+		/// <summary>
+		/// Call remote service method by async. default using is client to server.
+		/// <para>The clientId is meaningful when call to client from server.</para>
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <typeparam name="TResult"></typeparam>
+		/// <param name="func"></param>
+		/// <param name="callFlow"></param>
+		/// <param name="clientId"></param>
+		/// <returns></returns>
+		public async Task<TResult> CallAsync<T, TResult>(Func<T, TResult> func, CallFlow callFlow = CallFlow.Request, Guid clientId = default(Guid))
+			where T : class
+			where TResult : class
+		{
+			return await this.AsyncProxy<T>(callFlow).CallAsync(func, clientId);
+		}
+
+		private void InitOutgoingSocket()
+		{
+			this._outgoing?.Dispose();
+
+			this._outgoing = new OutgoingSocket();
 		}
 
 		private T Proxy<T>(CallFlow flow) where T : class
@@ -105,7 +155,7 @@ namespace Communication.Core
 				return model?.Proxy;
 			}
 		}
-		
+
 		private IAsyncProxy<T> AsyncProxy<T>(CallFlow flow) where T : class
 		{
 			// TODO : improvement pool structure
@@ -125,19 +175,19 @@ namespace Communication.Core
 
 		private T AddProxy<T>(CallFlow flow) where T : class
 		{
-			var socketSender = flow == CallFlow.Notify ? (ISocketSender) this._service : this._outgoing;
+			var socketSender = flow == CallFlow.Notify ? (ISocketSender)this._service : this._outgoing;
 			var newProxy = ServiceProxyFactory<T>.GetProxy(socketSender);
 			var proxyContext = new ProxyContext<T>(newProxy);
-			this._syncProxies.Add(flow, new List<IProxyContainer> {proxyContext});
+			this._syncProxies.Add(flow, new List<IProxyContainer> { proxyContext });
 
 			return newProxy;
 		}
 
 		private IAsyncProxy<T> AddAsyncProxy<T>(CallFlow flow) where T : class
 		{
-			var socketSender = flow == CallFlow.Notify ? (ISocketSender) this._service : this._outgoing;
+			var socketSender = flow == CallFlow.Notify ? (ISocketSender)this._service : this._outgoing;
 			var newProxy = new AsyncServiceProxy<T>(socketSender);
-			this._asyncProxies.Add(flow, new List<IProxyContainer> {newProxy});
+			this._asyncProxies.Add(flow, new List<IProxyContainer> { newProxy });
 
 			return newProxy;
 		}
@@ -172,7 +222,7 @@ namespace Communication.Core
 				BufferPool.Instance.ReturnBuffer(stateObject.Buffer);
 
 				stateObject.Buffer = null;
-				
+
 				stateObject.Buffer = BufferPool.Instance.GetBuffer(BufferPool.Buffer1024Size);
 
 				socket.BeginReceive(stateObject.Buffer, 0, BufferPool.Buffer1024Size, SocketFlags.None, ReceiveCallback, stateObject);
@@ -188,7 +238,7 @@ namespace Communication.Core
 				if (se.ErrorCode == 10054)
 				{
 					// TODO : add to connection close message and handle to socket management
-					Console.WriteLine("{0} Socket Closed! {1}", stateObject.ClientId,se);
+					Console.WriteLine("{0} Socket Closed! {1}", stateObject.ClientId, se);
 					stateObject.Dispose();
 				}
 				Console.WriteLine();
@@ -200,12 +250,14 @@ namespace Communication.Core
 				Console.WriteLine();
 			}
 		}
-		
+
 		public void Dispose()
 		{
 			this._service?.Dispose();
 
 			this._outgoing?.Dispose();
 		}
+
+		#endregion
 	}
 }

@@ -22,7 +22,7 @@ namespace TestClient
 
 			var communicator = new Communicator();
 			var serviceStatus = new ServiceStatus();
-			communicator.Initialize(serviceStatus); // if need interface implement in client side.
+			communicator.Initialize(serviceStatus); // implement in client side if need interface.
 			communicator.ConnectToService(ipInput, ServicePort);
 			
 			Console.WriteLine("Connect to Service Start! IP : {0}, Port : {1}", ipInput, ServicePort);
@@ -67,7 +67,7 @@ namespace TestClient
 
 			if (hash % 2 == 0)
 			{
-				var pingResponse = await com.CallToServerAsync((IServiceStatus s) => s.KeepAlive(new Ping
+				var pingResponse = await com.CallAsync((IServiceStatus s) => s.KeepAlive(new Ping
 				{
 					ClientHash = hash,
 					ClientId = com.ClientId,
@@ -79,7 +79,7 @@ namespace TestClient
 			}
 			else
 			{
-				var setStatusResponse = await com.CallToServerAsync((IServiceStatus s) => s.SetServiceStatus(new SetServiceStatusRequest
+				var setStatusResponse = await com.CallAsync((IServiceStatus s) => s.SetServiceStatus(new SetServiceStatusRequest
 				{
 					ClientHash = hash,
 					ClientId = com.ClientId,
